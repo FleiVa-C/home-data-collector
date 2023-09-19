@@ -9,6 +9,10 @@ mod prelude;
 mod utils;
 mod api;
 
+
+use api::sensor::{
+    get_sensor_uuid
+};
 use api::test::{
     index
 };
@@ -25,6 +29,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
         .wrap(logger)
         .service(index)
+        .service(get_sensor_uuid)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
