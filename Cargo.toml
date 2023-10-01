@@ -1,5 +1,5 @@
 [package]
-name = "home_data_collector"
+name = "home-data-collector"
 version = "0.1.0"
 edition = "2021"
 
@@ -16,6 +16,7 @@ log = "0.4.20"
 strum_macros = "0.25.2"
 strum = { version = "0.25", features = ["derive"]}
 surrealdb = "1.0.0"
+derive_more = "0.99.17"
 
 [dev-dependencies]
 anyhow = "1"

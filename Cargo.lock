@@ -1408,11 +1408,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "home_data_collector"
+name = "home-data-collector"
 version = "0.1.0"
 dependencies = [
  "actix-web",
  "anyhow",
+ "derive_more",
  "env_logger",
  "log",
  "serde",
