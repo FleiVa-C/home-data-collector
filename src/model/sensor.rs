@@ -1,5 +1,9 @@
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
+use surrealdb::sql::{Object, Value};
+use std::collections::BTreeMap;
+
+use crate::utils::macros::map;
 
 #[derive(Serialize, Deserialize)]
 pub struct Sensor {
@@ -16,5 +20,11 @@ impl Sensor {
 
     pub fn get_global_id(&self) -> String {
         return format!("{}", self.uuid);
+    }
+}
+
+impl From<Sensor> for Value {
+    fn from(val: Sensor) -> Self {
+        map![ "id".into() => val.uuid.into(),].into()
     }
 }

@@ -16,10 +16,7 @@ mod repository;
 
 
 use api::sensor::{
-    get_sensor_uuid, register_sensor
-};
-use api::test::{
-    index
+    get_sensor_uuid, register_sensor, get_all_sensors
 };
 use repository::sdb::{SDBRepository, self};
 
@@ -46,9 +43,9 @@ async fn main() -> std::io::Result<()> {
         App::new()
         .wrap(logger)
         .app_data(sdb_data)
-        .service(index)
         .service(get_sensor_uuid)
         .service(register_sensor)
+        .service(get_all_sensors) 
     })
     .bind(("127.0.0.1", 8080))?
     .run()

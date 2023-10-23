@@ -14,12 +14,8 @@ pub struct SDBRepository {
 
 pub struct SDBError;
 
-pub struct Record {
-    id: Thing
-}
-
 impl SDBRepository {
-    pub fn init(client: Surreal<Client>) -> SDBRepository {
+    pub fn init(client: Surreal<Client>) -> Self {
         SDBRepository{
             db: client
         }
@@ -32,4 +28,19 @@ impl SDBRepository {
             Err(_) => Err(SDBError),
         }
     }
+
+    pub async fn get_sensor(&self, sensor: Sensor) -> Option<Sensor>{
+        let response: Result<Option<Sensor>, surrealdb::Error> = self.db.select(("sensor", "yajeoou11ihvig35zbw1" )).await;
+        match response {
+            Ok(output) => output,
+            Err(_) => None,
+        }
+    }
+    
+    pub async fn get_all_sensors(&self) -> Result<Vec<Sensor>, SDBError>{
+        let response_data: Result<Vec<Sensor>, surrealdb::Error> = self.db.select("sensor").await;
+        match response_data {
+            Ok(response_data) => Ok(response_data),
+            Err(_) => Err(SDBError)
+        }  }
 }
