@@ -4,6 +4,7 @@ use surrealdb::opt::auth::Root;
 use surrealdb::sql::Thing;
 use serde::{Deserialize, Serialize};
 
+use crate::api::sensor::SensorIdentifier;
 use crate::model::sensor::Sensor;
 
 
@@ -22,15 +23,15 @@ impl SDBRepository {
     }
 
     pub async fn register_sensor(&self, sensor: Sensor) -> Result<(), SDBError>{
-        let created: Result<Vec<Sensor>, surrealdb::Error> = self.db.create("sensor").content(sensor).await;
+        let created: Result<Option<Sensor>, surrealdb::Error> = self.db.create(("sensor", sensor.get_global_id())).content(sensor).await;
         match created {
             Ok(_) => Ok(()),
             Err(_) => Err(SDBError),
         }
     }
 
-    pub async fn get_sensor(&self, sensor: Sensor) -> Option<Sensor>{
-        let response: Result<Option<Sensor>, surrealdb::Error> = self.db.select(("sensor", "yajeoou11ihvig35zbw1" )).await;
+    pub async fn get_sensor(&self, sensor: SensorIdentifier) -> Option<Sensor>{
+        let response: Result<Option<Sensor>, surrealdb::Error> = self.db.select(("sensor", sensor.get_global_id())).await;
         match response {
             Ok(output) => output,
             Err(_) => None,
@@ -42,5 +43,6 @@ impl SDBRepository {
         match response_data {
             Ok(response_data) => Ok(response_data),
             Err(_) => Err(SDBError)
-        }  }
+            }
+    }
 }

@@ -16,7 +16,7 @@ mod repository;
 
 
 use api::sensor::{
-    get_sensor_uuid, register_sensor, get_all_sensors
+    get_sensor_uuid, register_sensor, get_all_sensors, get_sensor
 };
 use repository::sdb::{SDBRepository, self};
 
@@ -27,7 +27,7 @@ async fn main() -> std::io::Result<()> {
     std::env::set_var("RUTS_BACKTRACE", "1");
     env_logger::init();
 
-    let mut client: Surreal<Client> = Surreal::new::<Ws>("192.168.0.240:80").await.unwrap();
+    let mut client: Surreal<Client> = Surreal::new::<Ws>("192.168.0.240:80").await.expect("Can't connect to SurrealBD instance!");
     client.signin(Root {
         username: "root",
         password: "root"
@@ -46,6 +46,7 @@ async fn main() -> std::io::Result<()> {
         .service(get_sensor_uuid)
         .service(register_sensor)
         .service(get_all_sensors) 
+        .service(get_sensor)
     })
     .bind(("127.0.0.1", 8080))?
     .run()

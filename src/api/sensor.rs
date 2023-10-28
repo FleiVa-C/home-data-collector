@@ -2,22 +2,28 @@ use actix_web::{
     get,
     post,
     put,
-    error::ResponseError,
+    error::{ResponseError, PayloadError, self},
     web::Path,
     web::Json,
     web::Data,
+    web,
     HttpResponse,
     http::{header::ContentType, StatusCode}};
+use futures::StreamExt;
 use serde::{Serialize, Deserialize};
 use derive_more::Display;
 use crate::model::sensor::Sensor;
 use crate::repository::sdb::{SDBRepository, SDBError};
 
 
+
 #[derive(Debug, Display)]
 pub enum SensorError{
     SensorNotFound,
     SensorRegisterFailure,
+    SensorInfoOverflow,
+    PayloadError,
+    ParseError,
 }
 
 impl ResponseError for SensorError {
@@ -31,7 +37,22 @@ impl ResponseError for SensorError {
         match self {
             SensorError::SensorNotFound => StatusCode::NOT_FOUND,
             SensorError::SensorRegisterFailure => StatusCode::FAILED_DEPENDENCY,
+            SensorError::SensorInfoOverflow => StatusCode::BAD_REQUEST,
+            SensorError::PayloadError => StatusCode::BAD_REQUEST,
+            SensorError::ParseError => StatusCode::BAD_REQUEST
         }
+    }
+}
+
+impl From<PayloadError> for SensorError{
+    fn from(e: PayloadError) -> Self{
+        SensorError::PayloadError
+    }
+}
+
+impl From<serde_json::Error> for SensorError{
+    fn from(e: serde_json::Error) -> Self{
+        SensorError::ParseError
     }
 }
 
@@ -40,6 +61,18 @@ pub struct SensorIdentifier {
     sensor_identifier: String,
 }
 
+impl SensorIdentifier{
+    fn new(identifier: String) -> SensorIdentifier{
+        SensorIdentifier { sensor_identifier: identifier }
+    }
+    pub fn get_global_id(&self) -> String {
+        return format!("{}", self.sensor_identifier);
+    }
+}
+
+
+const MAX_SIZE: usize = 262_144;
+
 
 #[get("/sensor/{sensor_uuid}")]
 pub async fn get_sensor_uuid(sensor_identifier: Path<SensorIdentifier>) -> Json<String> {
@@ -47,12 +80,21 @@ pub async fn get_sensor_uuid(sensor_identifier: Path<SensorIdentifier>) -> Json<
 }
 
 #[post("/register_sensor/{sensor_identifier}")]
-pub async fn register_sensor(sdb_repo: Data<SDBRepository>, sensor_uuid: Path<SensorIdentifier>) -> Result<Json<SensorIdentifier>, SensorError> {
-    let sensor = Sensor::new(sensor_uuid.sensor_identifier.clone());
+pub async fn register_sensor(sdb_repo: Data<SDBRepository>, sensor_uuid: Path<SensorIdentifier>, mut payload: web::Payload) -> Result<Json<SensorIdentifier>, SensorError> {
+    let mut body = web::BytesMut::new();
+    while let Some(chunk) = payload.next().await {
+        let chunk = chunk?;
+
+        if (body.len() + chunk.len()) > MAX_SIZE {
+            return Err(SensorError::SensorInfoOverflow);
+        }
+        body.extend_from_slice(&chunk);
+    }
+    let sensor: Sensor = serde_json::from_slice::<Sensor>(&body)?;
     let sensor_id = sensor.get_global_id();
     match sdb_repo.register_sensor(sensor).await {
         Ok(()) => Ok(Json(SensorIdentifier {sensor_identifier: sensor_id})),
-        Err(_) => Err(SensorError::SensorRegisterFailure)
+        Err(_) => Err(SensorError::SensorNotFound)
     }
 }
 
@@ -67,10 +109,10 @@ pub async fn get_all_sensors(sdb_repo: Data<SDBRepository>) -> Result<Json<Vec<S
 
 #[get("/get_sensor/{sensor_identifier}")]
 pub async fn get_sensor(sdb_repo: Data<SDBRepository>, sensor_uuid: Path<SensorIdentifier>) -> Result<Json<Sensor>, SensorError> {
-    let sensor: Sensor = Sensor::new(sensor_uuid.sensor_identifier.clone());
-    let response: Option<Sensor> = sdb_repo.get_sensor(sensor).await;
+    let sensor_identifier: SensorIdentifier = SensorIdentifier::new(sensor_uuid.sensor_identifier.clone());
+    let response: Option<Sensor> = sdb_repo.get_sensor(sensor_identifier).await;
     match response {
         Some(response) => Ok(Json(response)),
-        None => Err(SensorError::SensorNotFound)
+        None => Err(SensorError::SensorRegisterFailure)
     }
 }
