@@ -8,7 +8,7 @@ use surrealdb::opt::RecordId;
 use crate::utils::macros::map;
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Sensor {
+pub struct Signal {
     id: Option<RecordId>,
     uuid: String,
     name: String,
@@ -16,13 +16,13 @@ pub struct Sensor {
 }
 
 
-impl Sensor {
-    pub fn new(sensor_uuid: String, sensor_name: String, sensor_uom: String) -> Sensor {
-        Sensor{
+impl Signal {
+    pub fn new(signal_uuid: String, signal_name: String, signal_uom: String) -> Signal {
+        Signal{
             id: None,
-            uuid: sensor_uuid,
-            name: sensor_name,
-            uom: sensor_uom
+            uuid: signal_uuid,
+            name: signal_name,
+            uom: signal_uom
         }
     }
 
@@ -31,8 +31,8 @@ impl Sensor {
     }
 }
 
-impl From<Sensor> for Value {
-    fn from(val: Sensor) -> Self {
+impl From<Signal> for Value {
+    fn from(val: Signal) -> Self {
         map![ "id".into() => val.uuid.into(),].into()
     }
 }

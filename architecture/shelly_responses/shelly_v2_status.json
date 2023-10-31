@@ -1,0 +1,86 @@
+{
+    "ble": {},
+    "cloud": {
+        "connected": true
+    },
+    "input:0": {
+        "id": 0,
+        "state": false
+    },
+    "mqtt": {
+        "connected": false
+    },
+    "switch:0": {
+        "id": 0,
+        "source": "init",
+        "output": false,
+        "apower": 0.0,
+        "voltage": 227.7,
+        "current": 0.000,
+        "aenergy": {
+            "total": 0.000,
+            "by_minute": [
+                0.000,
+                0.000,
+                0.000
+            ],
+            "minute_ts": 1698699381
+        },
+        "temperature": {
+            "tC": 55.6,
+            "tF": 132.1
+        }
+    },
+    "sys": {
+        "mac": "441793AC9A8C",
+        "restart_required": false,
+        "time": "21:56",
+        "unixtime": 1698699383,
+        "uptime": 4018962,
+        "ram_size": 234132,
+        "ram_free": 153992,
+        "fs_size": 458752,
+        "fs_free": 94208,
+        "cfg_rev": 33,
+        "kvs_rev": 1,
+        "schedule_rev": 0,
+        "webhook_rev": 0,
+        "available_updates": {
+            "beta": {
+                "version": "1.0.7-beta2"
+            },
+            "stable": {
+                "version": "1.0.3"
+            }
+        }
+    },
+    "temperature:100": {
+        "id": 100,
+        "tC": 6.6,
+        "tF": 43.8
+    },
+    "temperature:101": {
+        "id": 101,
+        "tC": 9.9,
+        "tF": 49.8
+    },
+    "temperature:102": {
+        "id": 102,
+        "tC": 20.1,
+        "tF": 68.2
+    },
+    "temperature:103": {
+        "id": 103,
+        "tC": 20.4,
+        "tF": 68.8
+    },
+    "wifi": {
+        "sta_ip": "192.168.0.250",
+        "status": "got ip",
+        "ssid": "UPC1538DE4",
+        "rssi": -62
+    },
+    "ws": {
+        "connected": false
+    }
+}

@@ -1,0 +1,86 @@
+{
+    "wifi_sta": {
+        "connected": true,
+        "ssid": "UPC1538DE4",
+        "ip": "192.168.0.184",
+        "rssi": -78
+    },
+    "cloud": {
+        "enabled": true,
+        "connected": true
+    },
+    "mqtt": {
+        "connected": false
+    },
+    "time": "21:31",
+    "unixtime": 1698697905,
+    "serial": 798,
+    "has_update": true,
+    "mac": "3494547B57A0",
+    "cfg_changed_cnt": 1,
+    "actions_stats": {
+        "skipped": 0
+    },
+    "relays": [
+        {
+            "ison": false,
+            "has_timer": false,
+            "timer_started": 0,
+            "timer_duration": 0,
+            "timer_remaining": 0,
+            "overpower": false,
+            "is_valid": true,
+            "source": "input"
+        }
+    ],
+    "emeters": [
+        {
+            "power": 0.00,
+            "pf": -0.05,
+            "current": 0.01,
+            "voltage": 228.95,
+            "is_valid": true,
+            "total": 0.0,
+            "total_returned": 9033.3
+        },
+        {
+            "power": 0.00,
+            "pf": -0.18,
+            "current": 0.01,
+            "voltage": 230.69,
+            "is_valid": true,
+            "total": 0.0,
+            "total_returned": 8795.0
+        },
+        {
+            "power": -60.83,
+            "pf": -0.97,
+            "current": 0.28,
+            "voltage": 228.80,
+            "is_valid": true,
+            "total": 0.0,
+            "total_returned": 26785.1
+        }
+    ],
+    "total_power": -60.83,
+    "emeter_n": {
+        "current": 0.00,
+        "ixsum": 0.27,
+        "mismatch": false,
+        "is_valid": false
+    },
+    "fs_mounted": true,
+    "v_data": 1,
+    "ct_calst": 0,
+    "update": {
+        "status": "pending",
+        "has_update": true,
+        "new_version": "20230913-114244/v1.14.0-gcb84623",
+        "old_version": "20230510-083155/v1.13.1-gda6f9f2"
+    },
+    "ram_total": 49920,
+    "ram_free": 31172,
+    "fs_size": 233681,
+    "fs_free": 154867,
+    "uptime": 348746
+}

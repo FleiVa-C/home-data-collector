@@ -19,6 +19,7 @@ surrealdb = "1.0.0"
 derive_more = "0.99.17"
 futures = "0.3.29"
 serde_json = "1.0.107"
+chrono = "0.4.31"
 
 [dev-dependencies]
 anyhow = "1"

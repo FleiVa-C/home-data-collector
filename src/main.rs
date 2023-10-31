@@ -15,9 +15,10 @@ mod model;
 mod repository;
 
 
-use api::sensor::{
-    get_sensor_uuid, register_sensor, get_all_sensors, get_sensor
+use api::signal::{
+    register_signal, get_signal_all, get_signal
 };
+use api::ingest::ingest;
 use repository::sdb::{SDBRepository, self};
 
 
@@ -43,10 +44,10 @@ async fn main() -> std::io::Result<()> {
         App::new()
         .wrap(logger)
         .app_data(sdb_data)
-        .service(get_sensor_uuid)
-        .service(register_sensor)
-        .service(get_all_sensors) 
-        .service(get_sensor)
+        .service(register_signal)
+        .service(get_signal_all) 
+        .service(get_signal)
+        .service(ingest)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
