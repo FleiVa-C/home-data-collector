@@ -8,12 +8,17 @@ use serde::{Deserialize, Serialize};
 
 use crate::api::signal::SignalIdentifier;
 use crate::model::signal::Signal;
-use crate::model::ingest_packet::IngestionPacket;
+use crate::model::ingest_packet::{IngestionPacket, DataPoint};
 
 
 
 pub struct SDBRepository {
     db: Surreal<Client>,
+}
+
+pub enum IngestionResponse{
+    Success,
+    Failed(IngestionPacket)
 }
 
 pub struct SDBError;
@@ -48,8 +53,16 @@ impl SDBRepository {
             Err(_) => Err(SDBError)
             }
     }
-    pub async fn ingest_data(&self, data: IngestionPacket) -> Result<String, SDBError>{
-        todo!() // Find a way to ingest all the datapoints of the IngestionPacket to the right
-        // tables "sensor_uuid:<timestamp>" --> content = data
+
+    pub async fn ingest_data(&self, data: IngestionPacket) -> Result<String, IngestionResponse>{
+        let mut data_it = data.data.into_iter();
+        while let Some(dp) = data_it.next(){
+            let ingest_response: Result<Option<DataPoint>, surrealdb::Error> = self.db.create((dp.suuid.clone(), dp.timestamp.clone())).content(dp).await;
+            match ingest_response{
+                Ok(p) => (),
+                Err(_) => return Err(IngestionResponse::Failed(IngestionPacket{data: data_it.collect()}))
+            }
+        }
+        Ok("Success".to_string())
     }
 }
