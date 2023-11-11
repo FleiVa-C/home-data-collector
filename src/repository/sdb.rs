@@ -54,15 +54,15 @@ impl SDBRepository {
             }
     }
 
-    pub async fn ingest_data(&self, data: IngestionPacket) -> Result<String, IngestionResponse>{
+    pub async fn ingest_data(&self, data: IngestionPacket) ->IngestionResponse{
         let mut data_it = data.data.into_iter();
         while let Some(dp) = data_it.next(){
             let ingest_response: Result<Option<DataPoint>, surrealdb::Error> = self.db.create((dp.suuid.clone(), dp.timestamp.clone())).content(dp).await;
             match ingest_response{
                 Ok(p) => (),
-                Err(_) => return Err(IngestionResponse::Failed(IngestionPacket{data: data_it.collect()}))
+                Err(_) => return IngestionResponse::Failed(IngestionPacket{data: data_it.collect()})
             }
         }
-        Ok("Success".to_string())
+        IngestionResponse::Success
     }
 }

@@ -39,12 +39,17 @@ impl ResponseError for IngestionError {
     }
 }
 
-impl From<IngestionResponse> for IngestionError{
-    fn from(e: IngestionResponse) -> Self{
-        match e{
-            IngestionResponse::Failed(pl) => IngestionError::PartialIngestion(pl),
-            _ => IngestionError::DefaultError,
-        }
+impl ResponseError for IngestionPacket {
+    fn error_response(&self) -> HttpResponse {
+       HttpResponse::build(StatusCode::PARTIAL_CONTENT) 
+            .insert_header(ContentType::json())
+            .body(Json(&self).to_string())
+    }
+}
+
+impl From<IngestionPacket> for IngestionError{
+    fn from(e: IngestionPacket) -> Self{
+        IngestionError::PartialIngestion(e)
    }
 }
 const MAX_SIZE: usize = 262_144;
@@ -62,7 +67,7 @@ pub async fn ingest(sdb_repo: Data<SDBRepository>, mut payload: web::Payload) ->
     }
     let data_points = serde_json::from_slice::<IngestionPacket>(&body)?;
     match sdb_repo.ingest_data(data_points).await {
-        Ok(response) => Ok(Json(response)),
-        Err(response) => Err(IngestionError::from(response).into())
+        IngestionResponse::Success => Ok(Json("Success".to_string())),
+        IngestionResponse::Failed(response) => Err(response.into())
     }
 }
