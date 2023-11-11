@@ -3,9 +3,9 @@ use actix_web::{
     get,
     post,
     put,
-    error::{ResponseError, PayloadError, self},
+    error::{ResponseError, PayloadError, self, JsonPayloadError},
     web::Path,
-    web::Json,
+    web::{Json, JsonBody},
     web::Data,
     web,
     HttpResponse,
@@ -18,40 +18,14 @@ use crate::model::ingest_packet::{IngestionPacket, DataPoint};
 use crate::repository::sdb::{SDBRepository, SDBError};
 use chrono::{DateTime, Utc};
 
-#[derive(Debug, Display)]
-pub enum IngestionError{
-    PartialIngestion(IngestionPacket),
-    DefaultError
-}
-
-impl ResponseError for IngestionError {
-    fn error_response(&self) -> HttpResponse {
-        HttpResponse::build(self.status_code())
-            .insert_header(ContentType::json())
-            .body(self.to_string())
-    }
-
-    fn status_code(&self) -> StatusCode {
-        match self {
-            IngestionError::PartialIngestion(_) => StatusCode::PARTIAL_CONTENT,
-            IngestionError::DefaultError => StatusCode::BAD_REQUEST
-        }
-    }
-}
-
 impl ResponseError for IngestionPacket {
     fn error_response(&self) -> HttpResponse {
-       HttpResponse::build(StatusCode::PARTIAL_CONTENT) 
+       HttpResponse::build(StatusCode::ACCEPTED) 
             .insert_header(ContentType::json())
-            .body(Json(&self).to_string())
+            .body(serde_json::to_string(&self).unwrap())
     }
 }
 
-impl From<IngestionPacket> for IngestionError{
-    fn from(e: IngestionPacket) -> Self{
-        IngestionError::PartialIngestion(e)
-   }
-}
 const MAX_SIZE: usize = 262_144;
 
 #[post("/ingest")]
