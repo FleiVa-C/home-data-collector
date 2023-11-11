@@ -1,16 +1,20 @@
+use actix_web::body::{BodySize, MessageBody};
 use serde::{Serialize, Deserialize};
 use strum_macros::Display;
+use std::io::Write;
 use surrealdb::sql::{Object, Value, Thing};
 use surrealdb::opt::RecordId;
-use std::fmt::Debug;
-use std::fmt;
+use std::{
+    fmt::Debug,
+    fmt};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IngestionPacket {
     pub data : Vec<DataPoint>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DataPoint {
     pub timestamp: i64,
     pub suuid: String,
