@@ -73,7 +73,8 @@ impl SignalIdentifier{
 const MAX_SIZE: usize = 262_144;
 
 #[post("/register_signal/{signal_identifier}")]
-pub async fn register_signal(sdb_repo: Data<SDBRepository>, signal_uuid: Path<SignalIdentifier>, mut payload: web::Payload) -> Result<Json<SignalIdentifier>, SignalError> {
+pub async fn register_signal(sdb_repo: Data<SDBRepository>, signal_uuid: Path<SignalIdentifier>,
+                             mut payload: web::Payload) -> Result<Json<SignalIdentifier>, SignalError> {
     let mut body = web::BytesMut::new();
     while let Some(chunk) = payload.next().await {
         let chunk = chunk?;
