@@ -19,6 +19,7 @@ use api::signal::{
     register_signal, get_signal_all, get_signal
 };
 use api::ingest::ingest;
+use api::query_timeseries::query_timeseries;
 use repository::sdb::{SDBRepository, self};
 
 
@@ -48,6 +49,7 @@ async fn main() -> std::io::Result<()> {
         .service(get_signal_all) 
         .service(get_signal)
         .service(ingest)
+        .service(query_timeseries)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
