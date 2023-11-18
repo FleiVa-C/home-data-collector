@@ -7,17 +7,27 @@ use crate::app::signal_meta::model::Signal;
 impl SDBRepository{
     pub async fn ingest_data(&self, data: IngestionPacket) ->IngestionResponse{
         let mut data_it = data.data.into_iter();
+        let mut success_data: Vec<DataPoint> = Vec::new();
+        let mut failed_data: Vec<DataPoint> = Vec::new();
+        let mut already_ingested: Vec<DataPoint> = Vec::new();
         while let Some(dp) = data_it.next(){
             let ingest_response: Result<Option<DataPoint>, surrealdb::Error> =
                 self.db.create((dp.suuid.clone(), dp.timestamp.clone())).content(dp.clone()).await;
             match ingest_response{
-                Ok(p) => (),
-                Err(_) => { let mut failed_data: Vec<DataPoint> = data_it.collect();
-                    failed_data.insert(0, dp);
-                    return IngestionResponse::Failed(IngestionPacket{data: failed_data})}
-            }
+                Ok(p) => success_data.push(dp),
+                Err(msg) => {if msg.to_string().ends_with("already exists"){
+                    already_ingested.push(dp);
+                } else {
+                    failed_data.push(dp);
+                }}
+            };
         }
-        IngestionResponse::Success
+        if failed_data.is_empty() && already_ingested.is_empty() {
+            IngestionResponse::Success
+        } else {
+        IngestionResponse::MultiStatus(MultiStatusData { success: success_data,
+            failed: failed_data, already_exists: already_ingested })
+        }
     }
 
     pub async fn query_timeseries(&self, data: QueryTimeseriesData) -> QueryResponse{

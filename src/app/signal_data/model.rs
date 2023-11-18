@@ -16,6 +16,31 @@ impl fmt::Display for IngestionPacket{
     }
 }
 
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MultiStatusData {
+    pub success : Vec<DataPoint>,
+    pub failed : Vec<DataPoint>,
+    pub already_exists : Vec<DataPoint>
+}
+
+impl fmt::Display for MultiStatusData{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result{
+        for dp in &self.success{
+            write!(f, "\t{}", dp)?;
+        }
+        for dp in &self.failed{
+            write!(f, "\t{}", dp)?;
+        }
+        for dp in &self.already_exists{
+            write!(f, "\t{}", dp)?;
+        }
+    Ok(())
+    }
+}
+
+
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DataPoint {
     pub timestamp: i64,
@@ -32,7 +57,7 @@ impl fmt::Display for DataPoint{
 
 pub enum IngestionResponse{
     Success,
-    Failed(IngestionPacket)
+    MultiStatus(MultiStatusData)
 }
 
 #[derive(Serialize, Deserialize)]

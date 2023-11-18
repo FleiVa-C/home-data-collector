@@ -3,12 +3,11 @@ use actix_web::{
     HttpResponse,
     http::{StatusCode, header::ContentType}};
 use derive_more::Display;
+use super::model::{IngestionPacket, MultiStatusData};
 
-use crate::app::signal_data::model::IngestionPacket;
-
-impl ResponseError for IngestionPacket {
+impl ResponseError for MultiStatusData {
     fn error_response(&self) -> HttpResponse {
-       HttpResponse::build(StatusCode::ACCEPTED) 
+       HttpResponse::build(StatusCode::MULTI_STATUS) 
             .insert_header(ContentType::json())
             .body(serde_json::to_string(&self).unwrap())
     }

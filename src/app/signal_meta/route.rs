@@ -24,14 +24,14 @@ pub async fn register_signal(sdb_repo: Data<SDBRepository>, mut payload: web::Pa
         let chunk = chunk?;
 
         if (body.len() + chunk.len()) > body_length {
-            return Err(SignalError::Overflow);
+            return Err(SignalError::Overflow("Overflow Error".to_string()));
         }
         body.extend_from_slice(&chunk);
     }
     let signal: Signal = serde_json::from_slice::<Signal>(&body)?;
     match sdb_repo.register_signal(signal).await {
         Ok(()) => Ok(Json("Success".to_string())),
-        Err(_) => Err(SignalError::SignalNotFound)
+        Err(_) => Err(SignalError::SignalAlreadyExists("Signal already exists.".to_string()))
     }
 }
 
@@ -50,6 +50,6 @@ pub async fn get_signal(sdb_repo: Data<SDBRepository>, signal_uuid: Path<SignalI
     let response: Option<Signal> = sdb_repo.get_signal(signal_identifier).await;
     match response {
         Some(response) => Ok(Json(response)),
-        None => Err(SignalError::SignalRegisterFailure)
+        None => Err(SignalError::SignalNotFound)
     }
 }
