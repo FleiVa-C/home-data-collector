@@ -5,8 +5,6 @@ use std::collections::BTreeMap;
 use std::fmt::Debug;
 use surrealdb::opt::RecordId;
 
-use crate::utils::macros::map;
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Signal {
     pub id: Option<RecordId>,
@@ -16,6 +14,19 @@ pub struct Signal {
     pub display_uom: String,
 }
 
+#[derive(Deserialize, Serialize)]
+pub struct SignalIdentifier {
+    pub signal_identifier: String
+}
+
+impl SignalIdentifier{
+    pub fn new(identifier: String) -> SignalIdentifier{
+        SignalIdentifier { signal_identifier: identifier }
+    }
+    pub fn get_global_id(&self) -> String {
+        return format!("{}", self.signal_identifier);
+    }
+}
 
 impl Signal {
     pub fn new(signal_uuid: String, signal_name: String, signal_uom: String,
@@ -31,11 +42,5 @@ impl Signal {
 
     pub fn get_global_id(&self) -> String {
         return format!("{}", self.uuid);
-    }
-}
-
-impl From<Signal> for Value {
-    fn from(val: Signal) -> Self {
-        map![ "id".into() => val.uuid.into(),].into()
     }
 }
