@@ -10,7 +10,7 @@ use actix_web::{
 use futures::StreamExt;
 use serde::{Serialize, Deserialize};
 
-use crate::app::signal_data::model::{IngestionPacket, IngestionResponse,
+use crate::app::signal_data::model::{IngestionPacket, IngestionResponse, MultiStatusData,
                                     QueryResponse, QueryResult, QueryTimeseriesData};
 use crate::app::signal_data::error::QueryError;
 use crate::sdb::SDBRepository;
@@ -32,7 +32,7 @@ pub async fn ingest(sdb_repo: Data<SDBRepository>, mut payload: Payload,
     let data_points = serde_json::from_slice::<IngestionPacket>(&body)?;
     match sdb_repo.ingest_data(data_points).await {
         IngestionResponse::Success => Ok(Json("Success".to_string())),
-        IngestionResponse::Failed(response) => Err(response.into())
+        IngestionResponse::MultiStatus(response) => Err(response.into())
     }
 }
 

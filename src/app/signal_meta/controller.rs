@@ -8,7 +8,7 @@ impl SDBRepository{
             self.db.create(("signal", signal.get_global_id())).content(signal).await;
         match created {
             Ok(_) => Ok(()),
-            Err(_) => Err(SignalError::SignalRegisterFailure),
+            Err(_) => Err(SignalError::SignalRegisterFailure("Signal Already Exists".to_string())),
         }
     }
 

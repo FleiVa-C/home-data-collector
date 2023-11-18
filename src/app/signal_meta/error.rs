@@ -4,11 +4,14 @@ use actix_web::{
     http::{StatusCode, header::ContentType}};
 use derive_more::Display;
 
+use crate::app::general::model::DefaultErrorResponse;
+
 #[derive(Debug, Display)]
 pub enum SignalError{
     SignalNotFound,
-    SignalRegisterFailure,
-    Overflow,
+    SignalAlreadyExists(String),
+    SignalRegisterFailure(String),
+    Overflow(String),
     PayloadError,
     ParseError,
 }
@@ -17,14 +20,16 @@ impl ResponseError for SignalError {
     fn error_response(&self) -> HttpResponse {
         HttpResponse::build(self.status_code())
             .insert_header(ContentType::json())
-            .body(self.to_string())
+            .body(serde_json::to_string(&DefaultErrorResponse::init(self.status_code(),
+            self.to_string())).unwrap())
     }
 
     fn status_code(&self) -> StatusCode {
         match self {
             SignalError::SignalNotFound => StatusCode::NOT_FOUND,
-            SignalError::SignalRegisterFailure => StatusCode::FAILED_DEPENDENCY,
-            SignalError::Overflow => StatusCode::BAD_REQUEST,
+            SignalError::SignalAlreadyExists(_) => StatusCode::BAD_REQUEST,
+            SignalError::Overflow(_) => StatusCode::BAD_REQUEST,
+            SignalError::SignalRegisterFailure(_) => StatusCode::FAILED_DEPENDENCY,
             SignalError::PayloadError => StatusCode::BAD_REQUEST,
             SignalError::ParseError => StatusCode::BAD_REQUEST
         }
