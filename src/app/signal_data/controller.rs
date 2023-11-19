@@ -33,13 +33,14 @@ impl SDBRepository{
 
     pub async fn query_timeseries(&self, data: QueryTimeseriesData) -> QueryResponse{
         let mut response_data:Vec<SignalData> = Vec::new();
+        let mut not_found: Vec<String> = Vec::new();
         let mut query = data.signals.into_iter();
 
         while let Some(signal) = query.next(){
             let signal_query: Result<Option<Signal>, surrealdb::Error> =
                 self.db.select(("signal", &signal)).await;
             let signal_response = match signal_query {
-                Ok(response) => response.unwrap(),
+                Ok(response) => response.unwrap_or(Signal::not_found(&signal)),
                 Err(_) => return QueryResponse::Failed
             };
             let ts_query: Result<Vec<DataPoint>, surrealdb::Error> =

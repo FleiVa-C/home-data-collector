@@ -93,7 +93,7 @@ pub struct SignalData {
 
 #[derive(Serialize, Deserialize)]
 pub struct QueryResult {
-    pub data: Vec<SignalData>
+    pub data: Vec<SignalData>,
 }
 
 pub enum QueryResponse{

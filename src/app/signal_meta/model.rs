@@ -14,6 +14,18 @@ pub struct Signal {
     pub display_uom: String,
 }
 
+impl Signal {
+    pub fn not_found(search: &String) -> Self {
+        Signal {
+        id: None,
+        uuid: search.clone(),
+        name: "not found".to_string(),
+        uom: "not found".to_string(),
+        display_uom: "not found".to_string()
+        }
+    }
+}
+
 #[derive(Deserialize, Serialize)]
 pub struct SignalIdentifier {
     pub signal_identifier: String
