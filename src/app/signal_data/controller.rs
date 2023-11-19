@@ -7,12 +7,13 @@ use crate::app::signal_meta::model::Signal;
 impl SDBRepository{
     pub async fn ingest_data(&self, data: IngestionPacket) ->IngestionResponse{
         let mut data_it = data.data.into_iter();
-        let mut success_data: Vec<DataPoint> = Vec::new();
-        let mut failed_data: Vec<DataPoint> = Vec::new();
-        let mut already_ingested: Vec<DataPoint> = Vec::new();
+        let mut success_data: Vec<Measurement> = Vec::new();
+        let mut failed_data: Vec<Measurement> = Vec::new();
+        let mut already_ingested: Vec<Measurement> = Vec::new();
         while let Some(dp) = data_it.next(){
             let ingest_response: Result<Option<DataPoint>, surrealdb::Error> =
-                self.db.create((dp.suuid.clone(), dp.timestamp.clone())).content(dp.clone()).await;
+                self.db.create((dp.uuid.clone(), dp.timestamp.clone()))
+                    .content(DataPoint::from(&dp)).await;
             match ingest_response{
                 Ok(p) => success_data.push(dp),
                 Err(msg) => {if msg.to_string().ends_with("already exists"){
@@ -52,8 +53,7 @@ impl SDBRepository{
                         signal_name: signal_response.name,
                         uom: signal_response.uom,
                         display_uom: signal_response.display_uom,
-                        data: result.iter().map(|dp| DataValue {timestamp: dp.timestamp,
-                            value: dp.value}).collect()
+                        data: result
                     };
 
                     response_data.push(response);

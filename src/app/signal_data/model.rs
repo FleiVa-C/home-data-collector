@@ -4,7 +4,7 @@ use std::fmt;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IngestionPacket {
-    pub data : Vec<DataPoint>,
+    pub data : Vec<Measurement>,
 }
 
 impl fmt::Display for IngestionPacket{
@@ -19,9 +19,9 @@ impl fmt::Display for IngestionPacket{
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MultiStatusData {
-    pub success : Vec<DataPoint>,
-    pub failed : Vec<DataPoint>,
-    pub already_exists : Vec<DataPoint>
+    pub success : Vec<Measurement>,
+    pub failed : Vec<Measurement>,
+    pub already_exists : Vec<Measurement>
 }
 
 impl fmt::Display for MultiStatusData{
@@ -42,15 +42,15 @@ impl fmt::Display for MultiStatusData{
 
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct DataPoint {
+pub struct Measurement {
     pub timestamp: i64,
-    pub suuid: String,
+    pub uuid: String,
     pub value: f64,
 }
 
-impl fmt::Display for DataPoint{
+impl fmt::Display for Measurement{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result{
-        write!(f, "timestamp: {}, uuid: {}, value: {}", self.timestamp, self.suuid, self.value);
+        write!(f, "timestamp: {}, uuid: {}, value: {}", self.timestamp, self.uuid, self.value);
     Ok(())
     }
 }
@@ -68,16 +68,25 @@ pub struct QueryTimeseriesData {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct DataValue {
+pub struct DataPoint {
     pub timestamp: i64,
     pub value: f64
+}
+
+impl From<&Measurement> for DataPoint {
+    fn from(ms: &Measurement) -> Self{
+        DataPoint{
+            timestamp: ms.timestamp,
+            value: ms.value
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct SignalData {
     pub signal_uuid: String,
     pub signal_name: String,
-    pub data: Vec<DataValue>,
+    pub data: Vec<DataPoint>,
     pub uom: String,
     pub display_uom: String
 }
