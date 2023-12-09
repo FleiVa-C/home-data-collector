@@ -3,6 +3,13 @@ name = "collector"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
+serde = "1.0.193"
+serde_derive = "1.0.193"
+serde_json = "1.0.107"
+clokwerk = "0.4.0"
+chrono = "0.4.21"
+reqwest = {version = "0.11.22", features = ["json", "blocking"]}
+hdc_shared = { path = "../../shared"}

@@ -10,7 +10,8 @@ use actix_web::{
 use futures::StreamExt;
 use serde::{Serialize, Deserialize};
 
-use crate::app::signal_data::model::{IngestionPacket, IngestionResponse, MultiStatusData,
+use hdc_shared::models::ingestion_container::*;
+use crate::app::signal_data::model::{IngestionResponse, MultiStatusData,
                                     QueryResponse, QueryResult, QueryTimeseriesData};
 use crate::app::signal_data::error::QueryError;
 use crate::sdb::SDBRepository;
