@@ -1,6 +1,8 @@
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
+use hdc_shared::models::ingestion_container::*;
+
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ShellyV2Response {
@@ -174,3 +176,17 @@ pub struct Ws {
     pub connected: bool,
 }
 
+impl From<ShellyV2Response> for IngestionPacket{
+     fn from(value: ShellyV2Response) -> Self {
+         let ts: i64 = value.sys.unixtime;
+         let uuid: String = "temp_100_uuid".to_string();
+         let measurement_value: f64 = value.temperature_100.t_c;
+         IngestionPacket {
+             data: vec![Measurement{
+                 timestamp: ts,
+                 uuid: uuid,
+                 value: measurement_value
+             }]
+         }
+     }
+}
