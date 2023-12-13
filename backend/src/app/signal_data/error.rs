@@ -3,7 +3,8 @@ use actix_web::{
     HttpResponse,
     http::{StatusCode, header::ContentType}};
 use derive_more::Display;
-use super::model::{IngestionPacket, MultiStatusData};
+use super::model::MultiStatusData;
+use hdc_shared::models::ingestion_container::*;
 
 impl ResponseError for MultiStatusData {
     fn error_response(&self) -> HttpResponse {

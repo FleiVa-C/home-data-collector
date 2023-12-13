@@ -2,6 +2,8 @@
 
 members = [
     "backend",
-    "services/collector"
+    "services/collector",
+    "shared"
+
 ]
 resolver = "2"
