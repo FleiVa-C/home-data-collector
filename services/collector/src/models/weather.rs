@@ -47,19 +47,18 @@ pub struct Metric {
     pub elev: f64,
 }
 
-impl From<WeatherResponse> for IngestionPacket{
-     fn from(value: WeatherResponse) -> Self {
-         let obs = &value.observations[0];
-         let ts: i64 = obs.epoch;
-         let uuid: String = "weather_temp".to_string();
-         let measurement_value: f64 = obs.metric.temp;
-         IngestionPacket {
-             data: vec![Measurement{
-                 timestamp: ts,
-                 uuid: uuid,
-                 value: measurement_value
-             }]
-         }
-     }
+impl From<WeatherResponse> for IngestionPacket {
+    fn from(value: WeatherResponse) -> Self {
+        let obs = &value.observations[0];
+        let ts: i64 = obs.epoch;
+        let uuid: String = "weather_temp".to_string();
+        let measurement_value: f64 = obs.metric.temp;
+        IngestionPacket {
+            data: vec![Measurement {
+                timestamp: ts,
+                uuid: uuid,
+                value: measurement_value,
+            }],
+        }
+    }
 }
-

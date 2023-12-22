@@ -4,8 +4,6 @@ use serde_derive::Serialize;
 use hdc_shared::models::ingestion_container::*;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-
-
 #[serde(rename_all = "camelCase")]
 pub struct ShellyV1Response {
     #[serde(rename = "wifi_sta")]
@@ -130,17 +128,17 @@ pub struct Update {
     pub beta_version: String,
 }
 
-impl From<ShellyV1Response> for IngestionPacket{
-     fn from(value: ShellyV1Response) -> Self {
-         let ts: i64 = value.unixtime;
-         let uuid: String = "total_power".to_string();
-         let measurement_value: f64 = value.total_power;
-         IngestionPacket {
-             data: vec![Measurement{
-                 timestamp: ts,
-                 uuid: uuid,
-                 value: measurement_value
-             }]
-         }
-     }
+impl From<ShellyV1Response> for IngestionPacket {
+    fn from(value: ShellyV1Response) -> Self {
+        let ts: i64 = value.unixtime;
+        let uuid: String = "total_power".to_string();
+        let measurement_value: f64 = value.total_power;
+        IngestionPacket {
+            data: vec![Measurement {
+                timestamp: ts,
+                uuid: uuid,
+                value: measurement_value,
+            }],
+        }
+    }
 }

@@ -1,9 +1,9 @@
-use serde::{Serialize, Deserialize};
-use uuid::Uuid;
-use surrealdb::sql::{Object, Value, Thing};
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 use surrealdb::opt::RecordId;
+use surrealdb::sql::{Object, Thing, Value};
+use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Signal {
@@ -17,23 +17,25 @@ pub struct Signal {
 impl Signal {
     pub fn not_found(search: &String) -> Self {
         Signal {
-        id: None,
-        uuid: search.clone(),
-        name: "not found".to_string(),
-        uom: "not found".to_string(),
-        display_uom: "not found".to_string()
+            id: None,
+            uuid: search.clone(),
+            name: "not found".to_string(),
+            uom: "not found".to_string(),
+            display_uom: "not found".to_string(),
         }
     }
 }
 
 #[derive(Deserialize, Serialize)]
 pub struct SignalIdentifier {
-    pub signal_identifier: String
+    pub signal_identifier: String,
 }
 
-impl SignalIdentifier{
-    pub fn new(identifier: String) -> SignalIdentifier{
-        SignalIdentifier { signal_identifier: identifier }
+impl SignalIdentifier {
+    pub fn new(identifier: String) -> SignalIdentifier {
+        SignalIdentifier {
+            signal_identifier: identifier,
+        }
     }
     pub fn get_global_id(&self) -> String {
         return format!("{}", self.signal_identifier);
@@ -41,14 +43,18 @@ impl SignalIdentifier{
 }
 
 impl Signal {
-    pub fn new(signal_uuid: String, signal_name: String, signal_uom: String,
-               signal_display_uom: String) -> Signal {
-        Signal{
+    pub fn new(
+        signal_uuid: String,
+        signal_name: String,
+        signal_uom: String,
+        signal_display_uom: String,
+    ) -> Signal {
+        Signal {
             id: None,
             uuid: signal_uuid,
             name: signal_name,
             uom: signal_uom,
-            display_uom: signal_display_uom
+            display_uom: signal_display_uom,
         }
     }
 

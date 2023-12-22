@@ -1,3 +1,4 @@
 pub mod general;
-pub mod signal_meta;
+pub mod interface;
 pub mod signal_data;
+pub mod signal_meta;
