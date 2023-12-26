@@ -1,8 +1,12 @@
-use derive_more::Display;
 use serde::{Deserialize, Serialize};
+use serde_json;
+use actix_web::{
+    error::ResponseError,
+    http::{header::ContentType, StatusCode},
+    HttpResponse};
 use std::fmt;
 
-use hdc_shared::models::ingestion_container::*;
+use super::ingestion_container::Measurement;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MultiStatusData {
@@ -70,4 +74,12 @@ pub struct QueryResult {
 pub enum QueryResponse {
     Success(QueryResult),
     Failed,
+}
+
+impl ResponseError for MultiStatusData {
+    fn error_response(&self) -> HttpResponse {
+        HttpResponse::build(StatusCode::MULTI_STATUS)
+            .insert_header(ContentType::json())
+            .body(serde_json::to_string(&self).unwrap())
+    }
 }

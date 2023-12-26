@@ -1,4 +1,11 @@
+pub mod signal_meta;
+pub mod signal_data;
 pub mod ingestion_container;
 pub mod interface;
-pub mod signal_meta;
+pub mod shelly_v1_adapter;
+pub mod shelly_v2_adapter;
+pub mod weather_adapter;
 pub mod tasklist;
+pub mod shelly_v1_adapter_light;
+pub mod shelly_v2_adapter_light;
+pub mod weather_adapter_light;

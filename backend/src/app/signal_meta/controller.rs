@@ -1,5 +1,5 @@
 use crate::app::signal_meta::error::SignalError;
-use crate::app::signal_meta::model::{Signal, SignalIdentifier};
+use hdc_shared::models::signal_meta::{Signal, SignalIdentifier};
 use crate::sdb::SDBRepository;
 
 impl SDBRepository {

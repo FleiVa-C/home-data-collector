@@ -1,9 +1,12 @@
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
-use hdc_shared::models::ingestion_container::*;
+use hdc_shared::models as models;
+use models::ingestion_container::*;
+use models::tasklist::TaskType;
+use models::shelly_v2_adapter_light::ShellyV2AdapterLight;
 use super::shelly_v1::IsSignalResponse;
-use hdc_shared::models::tasklist::{TaskType, ShellyV2AdapterLight};
+
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -175,21 +178,6 @@ pub struct Wifi {
 #[serde(rename_all = "camelCase")]
 pub struct Ws {
     pub connected: bool,
-}
-
-impl From<ShellyV2Response> for IngestionPacket {
-    fn from(value: ShellyV2Response) -> Self {
-        let ts: i64 = value.sys.unixtime;
-        let uuid: String = "temp_100_uuid".to_string();
-        let measurement_value: f64 = value.temperature_100.t_c;
-        IngestionPacket {
-            data: vec![Measurement {
-                timestamp: ts,
-                uuid: uuid,
-                value: measurement_value,
-            }],
-        }
-    }
 }
 
 impl IsSignalResponse for ShellyV2Response{

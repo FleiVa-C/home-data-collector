@@ -3,9 +3,11 @@ use serde_derive::Serialize;
 use serde_json::Value;
 use std::iter::zip;
 
-use hdc_shared::models::ingestion_container::*;
+use hdc_shared::models as models;
+use models::ingestion_container::*;
+use models::tasklist::TaskType;
+use models::weather_adapter_light::WeatherAdapterLight;
 use super::shelly_v1::IsSignalResponse;
-use hdc_shared::models::tasklist::{TaskType, WeatherAdapterLight};
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -42,22 +44,6 @@ pub struct Metric {
     pub precip_rate: f64,
     pub precip_total: f64,
     pub elev: f64,
-}
-
-impl From<WeatherResponse> for IngestionPacket {
-    fn from(value: WeatherResponse) -> Self {
-        let obs = &value;
-        let ts: i64 = obs.epoch;
-        let uuid: String = "weather_temp".to_string();
-        let measurement_value: f64 = obs.metric.temp;
-        IngestionPacket {
-            data: vec![Measurement {
-                timestamp: ts,
-                uuid: uuid,
-                value: measurement_value,
-            }],
-        }
-    }
 }
 
 impl WeatherResponse{

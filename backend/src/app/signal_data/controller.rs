@@ -1,9 +1,9 @@
 use std::ops::Bound;
 
-use crate::app::signal_data::model::*;
-use crate::app::signal_meta::model::Signal;
+use hdc_shared::models::signal_meta::Signal;
 use crate::sdb::SDBRepository;
 use hdc_shared::models::ingestion_container::*;
+use hdc_shared::models::signal_data::*;
 
 impl SDBRepository {
     pub async fn ingest_data(&self, data: IngestionPacket) -> IngestionResponse {

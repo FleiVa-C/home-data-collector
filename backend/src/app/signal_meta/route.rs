@@ -1,9 +1,3 @@
-use crate::app::signal_meta::{
-    controller,
-    error::SignalError,
-    model::{Signal, SignalIdentifier},
-};
-use crate::sdb::SDBRepository;
 use actix_web::{
     error::{self, PayloadError, ResponseError},
     get,
@@ -15,6 +9,13 @@ use actix_web::{
 use derive_more::Display;
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
+
+use hdc_shared::models::signal_meta::{Signal, SignalMeta, SignalIdentifier};
+use crate::sdb::SDBRepository;
+use crate::app::signal_meta::{
+    controller,
+    error::SignalError,
+};
 
 #[post("v1/register_signal")]
 pub async fn register_signal(

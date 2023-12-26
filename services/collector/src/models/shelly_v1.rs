@@ -1,5 +1,5 @@
 use std::iter::zip;
-use hdc_shared::models::tasklist::ShellyV1AdapterLight;
+use hdc_shared::models::shelly_v1_adapter_light::ShellyV1AdapterLight;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 

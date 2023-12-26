@@ -5,9 +5,10 @@ use std::thread;
 use std::time::{Duration, SystemTime};
 
 mod models;
-mod util;
+mod scheduler;
+mod collector;
 
-use util::scheduler::*;
+use scheduler::taskforce;
 
 fn main() {
     let mut scheduler = Scheduler::with_tz(chrono::Utc);

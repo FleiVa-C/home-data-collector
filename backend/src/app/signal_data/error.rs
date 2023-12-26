@@ -1,4 +1,4 @@
-use super::model::MultiStatusData;
+use hdc_shared::models::signal_data::MultiStatusData;
 use actix_web::{
     error::ResponseError,
     http::{header::ContentType, StatusCode},
@@ -6,14 +6,6 @@ use actix_web::{
 };
 use derive_more::Display;
 use hdc_shared::models::ingestion_container::*;
-
-impl ResponseError for MultiStatusData {
-    fn error_response(&self) -> HttpResponse {
-        HttpResponse::build(StatusCode::MULTI_STATUS)
-            .insert_header(ContentType::json())
-            .body(serde_json::to_string(&self).unwrap())
-    }
-}
 
 #[derive(Debug, Display)]
 pub enum QueryError {
