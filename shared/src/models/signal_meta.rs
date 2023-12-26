@@ -11,8 +11,9 @@ pub struct SignalMeta{
 }
 
 impl SignalMeta {
-    pub fn add_uuid(&mut self){
+    pub fn add_uuid(&mut self, interface_uuid: &String){
         self.uuid = Some(Uuid::new_v4().to_string());
+        self.interface_uuid = Some(interface_uuid.to_owned());
     }
 }
 

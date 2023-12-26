@@ -8,7 +8,7 @@ pub struct SDBRepository {
 
 impl SDBRepository {
     pub async fn init() -> Self {
-        let mut client: Surreal<Client> = Surreal::new::<Ws>("192.168.0.240:80")
+        let mut client: Surreal<Client> = Surreal::new::<Ws>("192.168.0.241:80")
             .await
             .expect("Can't connect to SurrealBD instance!");
         client

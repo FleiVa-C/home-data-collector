@@ -2,6 +2,8 @@ use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
 use hdc_shared::models::ingestion_container::*;
+use super::shelly_v1::IsSignalResponse;
+use hdc_shared::models::tasklist::{TaskType, ShellyV2AdapterLight};
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -186,6 +188,36 @@ impl From<ShellyV2Response> for IngestionPacket {
                 uuid: uuid,
                 value: measurement_value,
             }],
+        }
+    }
+}
+
+impl IsSignalResponse for ShellyV2Response{
+    fn to_ingestion_packet(self, task_type: TaskType) -> IngestionPacket {
+        let mut data: Vec<Measurement> = Vec::new();
+        let meta_data: Option<ShellyV2AdapterLight> = match task_type{
+            TaskType::ShellyV2Task(adapter) => Some(adapter),
+            _ => None
+        };
+        let meta_data = meta_data.unwrap();
+        let ts: i64 = self.sys.unixtime;
+        data.push(Measurement{
+            timestamp: ts.clone(),
+            uuid: meta_data.temp_100,
+            value: self.temperature_100.t_c,
+        });
+        data.push(Measurement{
+            timestamp: ts.clone(),
+            uuid: meta_data.temp_101,
+            value: self.temperature_101.t_c,
+        });
+        data.push(Measurement{
+            timestamp: ts.clone(),
+            uuid: meta_data.temp_102,
+            value: self.temperature_103.t_c,
+        });
+        IngestionPacket {
+            data
         }
     }
 }

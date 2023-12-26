@@ -1,21 +1,19 @@
-use super::scheduler::Task;
-use crate::models::{
-    shelly_v1::ShellyV1Response, shelly_v2::ShellyV2Response, weather::WeatherResponse,
-};
-use hdc_shared::models::ingestion_container::*;
+use hdc_shared::models::tasklist::CollectorTask;
+use hdc_shared::models::ingestion_container::IngestionPacket;
+use super::super::models::shelly_v1::*;
 use reqwest::{self, Error};
 use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
+use std::fmt::Debug;
 
-pub fn extract<S>(task: Task) -> Result<(), Error>
+pub fn extract<S>(task: CollectorTask) -> Result<(), Error>
 where
-    S: IsSignal + DeserializeOwned + Into<IngestionPacket>,
+    S: DeserializeOwned + IsSignalResponse + Debug
 {
     let client = reqwest::blocking::Client::new();
     let body = client.get(task.url).send()?.json::<S>();
 
     let ingestion_body: IngestionPacket = match body {
-        Ok(response) => response.into(),
+        Ok(response) => response.to_ingestion_packet(task.signals),
         Err(e) => return Err(e),
     };
     let _ = client
@@ -23,19 +21,5 @@ where
         .body(serde_json::to_string(&ingestion_body).unwrap())
         .send()
         .unwrap();
-
     Ok(())
-}
-
-pub trait IsSignal {}
-
-impl IsSignal for ShellyV1Response {}
-impl IsSignal for ShellyV2Response {}
-impl IsSignal for WeatherResponse {}
-
-#[derive(Serialize, Deserialize)]
-pub enum SensorType {
-    ShellyV1,
-    ShellyV2,
-    WeatherAPI,
 }

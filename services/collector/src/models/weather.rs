@@ -1,18 +1,15 @@
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use serde_json::Value;
+use std::iter::zip;
 
 use hdc_shared::models::ingestion_container::*;
+use super::shelly_v1::IsSignalResponse;
+use hdc_shared::models::tasklist::{TaskType, WeatherAdapterLight};
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WeatherResponse {
-    pub observations: Vec<Observation>,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Observation {
     #[serde(rename = "stationID")]
     pub station_id: String,
     pub obs_time_utc: String,
@@ -26,7 +23,7 @@ pub struct Observation {
     pub epoch: i64,
     pub lat: f64,
     pub uv: f64,
-    pub winddir: i64,
+    pub winddir: f64,
     pub humidity: f64,
     pub qc_status: i64,
     pub metric: Metric,
@@ -49,7 +46,7 @@ pub struct Metric {
 
 impl From<WeatherResponse> for IngestionPacket {
     fn from(value: WeatherResponse) -> Self {
-        let obs = &value.observations[0];
+        let obs = &value;
         let ts: i64 = obs.epoch;
         let uuid: String = "weather_temp".to_string();
         let measurement_value: f64 = obs.metric.temp;
@@ -59,6 +56,66 @@ impl From<WeatherResponse> for IngestionPacket {
                 uuid: uuid,
                 value: measurement_value,
             }],
+        }
+    }
+}
+
+impl WeatherResponse{
+    pub fn iter(&self) -> WeatherResponseIterator<'_> {
+        WeatherResponseIterator {
+            inner: self,
+            index: 0,
+        }
+    }
+}
+
+pub struct WeatherResponseIterator<'a> {
+    inner: &'a WeatherResponse,
+    index: u8,
+}
+
+impl <'a> Iterator for WeatherResponseIterator<'a> {
+    type Item = &'a f64;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let ret = match self.index {
+            0 => &self.inner.metric.temp,
+            1 => &self.inner.metric.dewpt,
+            2 => &self.inner.metric.wind_chill,
+            3 => &self.inner.metric.wind_speed,
+            4 => &self.inner.metric.wind_gust,
+            5 => &self.inner.metric.precip_rate,
+            6 => &self.inner.metric.precip_total,
+            7 => &self.inner.solar_radiation,
+            8 => &self.inner.uv,
+            9 => &self.inner.winddir,
+            10 => &self.inner.humidity,
+            _ => return None,
+        };
+        self.index += 1;
+        Some(ret)
+    }
+}
+
+impl IsSignalResponse for WeatherResponse{
+    fn to_ingestion_packet(self, task_type: TaskType) -> IngestionPacket {
+        let mut data: Vec<Measurement> = Vec::new();
+        let meta_data: Option<WeatherAdapterLight> = match task_type{
+            TaskType::WeatherTask(adapter) => Some(adapter),
+            _ => None
+        };
+        let meters = self.iter();
+        let emeters_uuid = meta_data.unwrap();
+        let ts: i64 = self.epoch;
+        for (uuid, value) in zip(emeters_uuid.iter(), meters){
+            data.push(Measurement{
+                timestamp: ts.clone(),
+                uuid: uuid.clone(),
+                value: *value,
+            });
+        };
+        IngestionPacket {
+            data
         }
     }
 }

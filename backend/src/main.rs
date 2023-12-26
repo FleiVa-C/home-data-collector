@@ -31,9 +31,10 @@ async fn main() -> std::io::Result<()> {
             .service(get_signal)
             .service(ingest)
             .service(query_timeseries)
-//            .service(get_interface)
+            .service(get_interface)
             .service(register_interface)
-//            .service(get_all_interfaces)
+            .service(get_all_interfaces)
+            .service(get_tasks)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
