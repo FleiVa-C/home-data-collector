@@ -1,35 +1,34 @@
-use serde::{Serialize, Deserialize};
 use derive_more::Display;
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
 use hdc_shared::models::ingestion_container::*;
 
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MultiStatusData {
-    pub success : Vec<Measurement>,
-    pub failed : Vec<Measurement>,
-    pub already_exists : Vec<Measurement>
+    pub success: Vec<Measurement>,
+    pub failed: Vec<Measurement>,
+    pub already_exists: Vec<Measurement>,
 }
 
-impl fmt::Display for MultiStatusData{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result{
-        for dp in &self.success{
+impl fmt::Display for MultiStatusData {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for dp in &self.success {
             write!(f, "\t{}", dp)?;
         }
-        for dp in &self.failed{
+        for dp in &self.failed {
             write!(f, "\t{}", dp)?;
         }
-        for dp in &self.already_exists{
+        for dp in &self.already_exists {
             write!(f, "\t{}", dp)?;
         }
-    Ok(())
+        Ok(())
     }
 }
 
-pub enum IngestionResponse{
+pub enum IngestionResponse {
     Success,
-    MultiStatus(MultiStatusData)
+    MultiStatus(MultiStatusData),
 }
 
 #[derive(Serialize, Deserialize)]
@@ -42,14 +41,14 @@ pub struct QueryTimeseriesData {
 #[derive(Serialize, Deserialize)]
 pub struct DataPoint {
     pub timestamp: i64,
-    pub value: f64
+    pub value: f64,
 }
 
 impl From<&Measurement> for DataPoint {
-    fn from(ms: &Measurement) -> Self{
-        DataPoint{
+    fn from(ms: &Measurement) -> Self {
+        DataPoint {
             timestamp: ms.timestamp,
-            value: ms.value
+            value: ms.value,
         }
     }
 }
@@ -60,7 +59,7 @@ pub struct SignalData {
     pub signal_name: String,
     pub data: Vec<DataPoint>,
     pub uom: String,
-    pub display_uom: String
+    pub display_uom: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -68,7 +67,7 @@ pub struct QueryResult {
     pub data: Vec<SignalData>,
 }
 
-pub enum QueryResponse{
+pub enum QueryResponse {
     Success(QueryResult),
-    Failed
+    Failed,
 }

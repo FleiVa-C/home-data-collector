@@ -1,22 +1,23 @@
+use super::model::MultiStatusData;
 use actix_web::{
     error::ResponseError,
+    http::{header::ContentType, StatusCode},
     HttpResponse,
-    http::{StatusCode, header::ContentType}};
+};
 use derive_more::Display;
-use super::model::MultiStatusData;
 use hdc_shared::models::ingestion_container::*;
 
 impl ResponseError for MultiStatusData {
     fn error_response(&self) -> HttpResponse {
-       HttpResponse::build(StatusCode::MULTI_STATUS) 
+        HttpResponse::build(StatusCode::MULTI_STATUS)
             .insert_header(ContentType::json())
             .body(serde_json::to_string(&self).unwrap())
     }
 }
 
 #[derive(Debug, Display)]
-pub enum QueryError{
-    Failed
+pub enum QueryError {
+    Failed,
 }
 
 impl ResponseError for QueryError {
@@ -28,7 +29,7 @@ impl ResponseError for QueryError {
 
     fn status_code(&self) -> StatusCode {
         match self {
-            QueryError::Failed => StatusCode::NOT_FOUND
+            QueryError::Failed => StatusCode::NOT_FOUND,
         }
     }
 }

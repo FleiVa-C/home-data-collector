@@ -2,6 +2,8 @@ use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
 use hdc_shared::models::ingestion_container::*;
+use super::shelly_v1::IsSignalResponse;
+use hdc_shared::models::tasklist::{TaskType, ShellyV2AdapterLight};
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -28,8 +30,7 @@ pub struct ShellyV2Response {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Ble {
-}
+pub struct Ble {}
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -176,17 +177,47 @@ pub struct Ws {
     pub connected: bool,
 }
 
-impl From<ShellyV2Response> for IngestionPacket{
-     fn from(value: ShellyV2Response) -> Self {
-         let ts: i64 = value.sys.unixtime;
-         let uuid: String = "temp_100_uuid".to_string();
-         let measurement_value: f64 = value.temperature_100.t_c;
-         IngestionPacket {
-             data: vec![Measurement{
-                 timestamp: ts,
-                 uuid: uuid,
-                 value: measurement_value
-             }]
-         }
-     }
+impl From<ShellyV2Response> for IngestionPacket {
+    fn from(value: ShellyV2Response) -> Self {
+        let ts: i64 = value.sys.unixtime;
+        let uuid: String = "temp_100_uuid".to_string();
+        let measurement_value: f64 = value.temperature_100.t_c;
+        IngestionPacket {
+            data: vec![Measurement {
+                timestamp: ts,
+                uuid: uuid,
+                value: measurement_value,
+            }],
+        }
+    }
+}
+
+impl IsSignalResponse for ShellyV2Response{
+    fn to_ingestion_packet(self, task_type: TaskType) -> IngestionPacket {
+        let mut data: Vec<Measurement> = Vec::new();
+        let meta_data: Option<ShellyV2AdapterLight> = match task_type{
+            TaskType::ShellyV2Task(adapter) => Some(adapter),
+            _ => None
+        };
+        let meta_data = meta_data.unwrap();
+        let ts: i64 = self.sys.unixtime;
+        data.push(Measurement{
+            timestamp: ts.clone(),
+            uuid: meta_data.temp_100,
+            value: self.temperature_100.t_c,
+        });
+        data.push(Measurement{
+            timestamp: ts.clone(),
+            uuid: meta_data.temp_101,
+            value: self.temperature_101.t_c,
+        });
+        data.push(Measurement{
+            timestamp: ts.clone(),
+            uuid: meta_data.temp_102,
+            value: self.temperature_103.t_c,
+        });
+        IngestionPacket {
+            data
+        }
+    }
 }

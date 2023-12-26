@@ -1,5 +1,5 @@
-use surrealdb::engine::remote::ws::{Ws, Client};
-use surrealdb::{Surreal, opt::auth::Root};
+use surrealdb::engine::remote::ws::{Client, Ws};
+use surrealdb::{opt::auth::Root, Surreal};
 
 #[derive(Clone)]
 pub struct SDBRepository {
@@ -8,15 +8,17 @@ pub struct SDBRepository {
 
 impl SDBRepository {
     pub async fn init() -> Self {
-        let mut client: Surreal<Client> =
-            Surreal::new::<Ws>("192.168.0.240:80").await.expect("Can't connect to SurrealBD instance!");
-        client.signin(Root {
-            username: "root",
-            password: "root"
-        }).await.unwrap();
+        let mut client: Surreal<Client> = Surreal::new::<Ws>("192.168.0.241:80")
+            .await
+            .expect("Can't connect to SurrealBD instance!");
+        client
+            .signin(Root {
+                username: "root",
+                password: "root",
+            })
+            .await
+            .unwrap();
         client.use_ns("test").use_db("test").await.unwrap();
-        SDBRepository{
-            db: client
-        }
+        SDBRepository { db: client }
     }
 }
