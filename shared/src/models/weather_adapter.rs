@@ -32,4 +32,20 @@ impl WeatherAdapter{
         self.wind_dir.add_uuid(interface_uuid);
         self.humidity.add_uuid(interface_uuid);
     }
+    pub fn get_signals(&self) -> Vec<SignalMeta>{
+        let mut signals: Vec<SignalMeta> = Vec::new();
+        signals.push(self.temp.clone());
+        signals.push(self.dewpoint.clone());
+        signals.push(self.windchill.clone());
+        signals.push(self.windspeed.clone());
+        signals.push(self.windgust.clone());
+        signals.push(self.pressure.clone());
+        signals.push(self.preciprate.clone());
+        signals.push(self.preciptotal.clone());
+        signals.push(self.solar_radiation.clone());
+        signals.push(self.uv.clone());
+        signals.push(self.wind_dir.clone());
+        signals.push(self.humidity.clone());
+        signals
+    }
 }

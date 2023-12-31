@@ -1,12 +1,14 @@
 use crate::app::signal_meta::error::SignalError;
-use hdc_shared::models::signal_meta::{Signal, SignalIdentifier};
+use hdc_shared::models::signal_meta::SignalMeta;
 use crate::sdb::SDBRepository;
 
+use super::model::SignalMetaQuery;
+
 impl SDBRepository {
-    pub async fn register_signal(&self, signal: Signal) -> Result<(), SignalError> {
-        let created: Result<Option<Signal>, surrealdb::Error> = self
+    pub async fn register_signal(&self, signal: SignalMeta) -> Result<(), SignalError> {
+        let created: Result<Option<SignalMeta>, surrealdb::Error> = self
             .db
-            .create(("signal", signal.get_global_id()))
+            .create(("signal", signal.uuid.clone().unwrap()))
             .content(signal)
             .await;
         match created {
@@ -17,20 +19,20 @@ impl SDBRepository {
         }
     }
 
-    pub async fn get_signal(&self, signal: SignalIdentifier) -> Option<Signal> {
-        let response: Result<Option<Signal>, surrealdb::Error> =
-            self.db.select(("signal", signal.get_global_id())).await;
-        match response {
-            Ok(output) => output,
-            Err(_) => None,
-        }
-    }
-
-    pub async fn get_all_signals(&self) -> Result<Vec<Signal>, SignalError> {
-        let response_data: Result<Vec<Signal>, surrealdb::Error> = self.db.select("signal").await;
+    pub async fn get_all_signals(&self) -> Result<Vec<SignalMeta>, SignalError> {
+        let response_data: Result<Vec<SignalMeta>, surrealdb::Error> = self.db.select("signal").await;
         match response_data {
             Ok(response_data) => Ok(response_data),
             Err(_) => Err(SignalError::SignalNotFound),
         }
+    }
+    pub async fn query_signal_meta(&self, query: SignalMetaQuery) -> Result<Vec<SignalMeta>, surrealdb::Error> {
+        let sql: String = query.build_sql_query();
+        let mut response = self.db
+            .query(sql)
+            .await?;
+
+        let result: Vec<SignalMeta> = response.take(0)?;
+        Ok(result)
     }
 }

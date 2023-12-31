@@ -27,6 +27,15 @@ impl AdapterType{
             Self::WeatherAPI(adapter) => adapter.add_uuid(&interface_uuid),
         }
     }
+
+    pub fn get_signals(&self) -> Vec<SignalMeta> {
+        match self{
+            Self::ShellyV1(adapter) => adapter.get_signals(),
+            Self::ShellyV2(adapter) => adapter.get_signals(),
+            Self::WeatherAPI(adapter) => adapter.get_signals(),
+        } 
+    }
+        
 }
 
 #[derive(Serialize, Deserialize)]

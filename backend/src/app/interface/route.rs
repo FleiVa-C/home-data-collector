@@ -5,13 +5,14 @@ use actix_web::{
         StatusCode,
     },
     post,
-    web::{self, Data, Header, Json, Path},
+    web::{self, Data, Header, Json, Path, Query},
     HttpResponse,
 };
 use derive_more::Display;
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
 use std::io;
+use super::model::InterfaceQuery;
 use hdc_shared::models::{tasklist::*, interface::*};
 
 use crate::app::general::error::*;
@@ -81,4 +82,17 @@ pub async fn get_tasks(
         Some(response) => Ok(Json(TaskList{tasks: response})),
         None => Err(DefaultError::NotFound),
     }
+}
+
+#[get("v1/interface")]
+pub async fn query_interface(
+    sdb_repo: Data<SDBRepository>,
+    query: Query<InterfaceQuery>
+    ) -> Result<Json<Vec<Interface>>, DefaultError> {
+    let response: Result<Vec<Interface>, surrealdb::Error> = sdb_repo.query_interfaces(query.into_inner()).await;
+    match response {
+        Ok(response) => Ok(Json(response)),
+        Err(_) => Err(DefaultError::NotFound),
+    }
+        
 }

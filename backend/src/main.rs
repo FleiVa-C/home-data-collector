@@ -26,17 +26,16 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(logger)
             .app_data(sdb_data)
-            .service(register_signal)
             .service(get_signal_all)
-            .service(get_signal)
             .service(ingest)
             .service(query_timeseries)
             .service(get_interface)
             .service(register_interface)
             .service(get_all_interfaces)
             .service(get_tasks)
+            .service(query_interface)
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("0.0.0.0", 8080))?
     .run()
     .await
 }
