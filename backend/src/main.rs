@@ -7,9 +7,9 @@ use surrealdb::sql::Thing;
 mod app;
 mod sdb;
 
+use app::interface::route::*;
 use app::signal_data::route::*;
 use app::signal_meta::route::*;
-use app::interface::route::*;
 use sdb::SDBRepository;
 
 #[tokio::main]

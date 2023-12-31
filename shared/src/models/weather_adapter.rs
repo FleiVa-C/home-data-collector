@@ -1,8 +1,8 @@
-use serde::{Serialize, Deserialize};
 use super::signal_meta::*;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
-pub struct WeatherAdapter{
+pub struct WeatherAdapter {
     pub temp: SignalMeta,
     pub dewpoint: SignalMeta,
     pub windchill: SignalMeta,
@@ -14,11 +14,11 @@ pub struct WeatherAdapter{
     pub solar_radiation: SignalMeta,
     pub uv: SignalMeta,
     pub wind_dir: SignalMeta,
-    pub humidity: SignalMeta
+    pub humidity: SignalMeta,
 }
 
-impl WeatherAdapter{
-    pub fn add_uuid(&mut self, interface_uuid: &String){
+impl WeatherAdapter {
+    pub fn add_uuid(&mut self, interface_uuid: &String) {
         self.temp.add_uuid(interface_uuid);
         self.dewpoint.add_uuid(interface_uuid);
         self.windchill.add_uuid(interface_uuid);
@@ -32,7 +32,7 @@ impl WeatherAdapter{
         self.wind_dir.add_uuid(interface_uuid);
         self.humidity.add_uuid(interface_uuid);
     }
-    pub fn get_signals(&self) -> Vec<SignalMeta>{
+    pub fn get_signals(&self) -> Vec<SignalMeta> {
         let mut signals: Vec<SignalMeta> = Vec::new();
         signals.push(self.temp.clone());
         signals.push(self.dewpoint.clone());

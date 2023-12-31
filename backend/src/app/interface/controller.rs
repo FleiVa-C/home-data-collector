@@ -1,10 +1,10 @@
-use serde::{Serialize, Deserialize};
-use surrealdb::{sql::Value, Error, error::Api};
+use serde::{Deserialize, Serialize};
+use surrealdb::{error::Api, sql::Value, Error};
 
-use hdc_shared::models::{interface::*, tasklist::*};
-use hdc_shared::models::signal_meta::SignalMeta;
-use crate::app::general::error::*;
+use crate::app::general::error::BackendError;
 use crate::sdb::SDBRepository;
+use hdc_shared::models::signal_meta::SignalMeta;
+use hdc_shared::models::{interface::*, tasklist::*};
 
 use super::model::InterfaceQuery;
 
@@ -12,22 +12,25 @@ impl SDBRepository {
     pub async fn register_interface(&self, interface: Interface) -> Result<(), surrealdb::Error> {
         let mut existing = self
             .db
-            .query(format!("SELECT * FROM interface WHERE base_url = '{}'", interface.base_url))
+            .query(format!(
+                "SELECT * FROM interface WHERE base_url = '{}'",
+                interface.base_url
+            ))
             .await?;
         let result: Vec<Interface> = existing.take(0)?;
         match result.len() {
             0 => (),
-            _ => return Err(Error::Api(Api::Query("Already exists".to_string())))
+            _ => return Err(Error::Api(Api::Query("Already exists".to_string()))),
         }
 
         let signals: Vec<SignalMeta> = interface.signals.get_signals();
         for signal in signals {
             let _: Option<SignalMeta> = self
-            .db
-            .create(("signal", signal.uuid.clone().unwrap()))
-            .content(signal)
-            .await?;
-            };
+                .db
+                .create(("signal", signal.uuid.clone().unwrap()))
+                .content(signal)
+                .await?;
+        }
 
         let created: Option<Interface> = self
             .db
@@ -36,46 +39,37 @@ impl SDBRepository {
             .await?;
         match created {
             Some(_) => Ok(()),
-            None => Ok(())
+            None => Ok(()),
         }
     }
-    pub async fn get_interface(&self, interface: String) -> Option<Interface> {
-        let response: Result<Option<Interface>, surrealdb::Error> = self
-            .db
-            .select(("interface", interface))
-            .await;
+    pub async fn get_interface(&self, interface: String) -> Result<Interface, surrealdb::Error> {
+        let response: Option<Interface> = self.db.select(("interface", interface)).await?;
         match response {
-            Ok(response) => response,
-            Err(_) => None,
+            Some(value) => Ok(value),
+            None => Err(Error::Api(Api::Query("No Interfaces found".to_string()))),
         }
     }
 
-    pub async fn get_all_interfaces(&self) -> Option<Vec<Interface>> {
-        let response: Result<Vec<Interface>, surrealdb::Error> = self.db.select("interface").await;
-        match response {
-            Ok(response) => Some(response),
-            Err(_) => None,
-        }
-    }
-    
-    pub async fn get_tasks(&self) -> Option<Vec<CollectorTask>>{
-        let response: Result<Vec<Interface>, surrealdb::Error> = self.db.select("interface").await;
-        match response {
-            Ok(response) => {
-                let tasklist = response
-                    .into_iter()
-                    .map(|entry| CollectorTask::from(entry))
-                    .collect();
-                Some(tasklist)},
-            Err(_) => None
-        }
+    pub async fn get_all_interfaces(&self) -> Result<Vec<Interface>, surrealdb::Error> {
+        let response: Vec<Interface> = self.db.select("interface").await?;
+        Ok(response)
     }
 
-    pub async fn query_interfaces(&self, interface_query: InterfaceQuery) -> Result<Vec<Interface>, surrealdb::Error> {
+    pub async fn get_tasks(&self) -> Result<Vec<CollectorTask>, surrealdb::Error> {
+        let response: Vec<Interface> = self.db.select("interface").await?;
+        let tasklist = response
+            .into_iter()
+            .map(|entry| CollectorTask::from(entry))
+            .collect();
+        Ok(tasklist)
+    }
+
+    pub async fn query_interfaces(
+        &self,
+        interface_query: InterfaceQuery,
+    ) -> Result<Vec<Interface>, surrealdb::Error> {
         let sql: String = interface_query.build_sql_query();
-        let mut response = self.db
-            .query(sql)
-            .await?;
+        let mut response = self.db.query(sql).await?;
 
         let result: Vec<Interface> = response.take(0)?;
         Ok(result)

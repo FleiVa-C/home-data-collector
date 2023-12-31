@@ -1,4 +1,3 @@
-use hdc_shared::models::signal_data::MultiStatusData;
 use actix_web::{
     error::ResponseError,
     http::{header::ContentType, StatusCode},
@@ -6,6 +5,7 @@ use actix_web::{
 };
 use derive_more::Display;
 use hdc_shared::models::ingestion_container::*;
+use hdc_shared::models::signal_data::MultiStatusData;
 
 #[derive(Debug, Display)]
 pub enum QueryError {

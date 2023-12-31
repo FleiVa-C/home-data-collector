@@ -1,9 +1,10 @@
-use serde::{Deserialize, Serialize};
-use serde_json;
 use actix_web::{
     error::ResponseError,
     http::{header::ContentType, StatusCode},
-    HttpResponse};
+    HttpResponse,
+};
+use serde::{Deserialize, Serialize};
+use serde_json;
 use std::fmt;
 
 use super::ingestion_container::Measurement;

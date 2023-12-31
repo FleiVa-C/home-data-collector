@@ -13,8 +13,11 @@ use serde::{Deserialize, Serialize};
 
 use crate::app::signal_data::error::QueryError;
 use crate::sdb::SDBRepository;
-use hdc_shared::models::signal_data::*;
-use hdc_shared::models::ingestion_container::*;
+use crate::app::general::error::BackendError;
+use hdc_shared::models::{
+    ingestion_container::IngestionPacket,
+    signal_data::{IngestionResponse, QueryResponse, QueryTimeseriesData, QueryResult}
+};
 
 #[post("v1/ingest")]
 pub async fn ingest(

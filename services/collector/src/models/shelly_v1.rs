@@ -1,15 +1,14 @@
-use std::iter::zip;
 use hdc_shared::models::shelly_v1_adapter_light::ShellyV1AdapterLight;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
+use std::iter::zip;
 
 use hdc_shared::models::ingestion_container::*;
 use hdc_shared::models::tasklist::TaskType;
 
-pub trait IsSignalResponse{
+pub trait IsSignalResponse {
     fn to_ingestion_packet(self, task_type: TaskType) -> IngestionPacket;
 }
-
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -136,30 +135,28 @@ pub struct Update {
     pub beta_version: String,
 }
 
-impl IsSignalResponse for ShellyV1Response{
+impl IsSignalResponse for ShellyV1Response {
     fn to_ingestion_packet(self, task_type: TaskType) -> IngestionPacket {
         let mut data: Vec<Measurement> = Vec::new();
-        let meta_data: Option<ShellyV1AdapterLight> = match task_type{
+        let meta_data: Option<ShellyV1AdapterLight> = match task_type {
             TaskType::ShellyV1Task(adapter) => Some(adapter),
-            _ => None
+            _ => None,
         };
         let emeters = self.emeters.into_iter();
         let emeters_uuid = meta_data.unwrap();
         let ts: i64 = self.unixtime;
-        for (uuid, value) in zip(emeters_uuid.iter(), emeters){
-            data.push(Measurement{
+        for (uuid, value) in zip(emeters_uuid.iter(), emeters) {
+            data.push(Measurement {
                 timestamp: ts.clone(),
                 uuid: uuid.clone(),
                 value: value.power,
             });
-        };
-        data.push(Measurement{
+        }
+        data.push(Measurement {
             timestamp: ts.clone(),
             uuid: emeters_uuid.emeter_4.clone(),
             value: self.total_power,
         });
-        IngestionPacket {
-            data
-        }
+        IngestionPacket { data }
     }
 }

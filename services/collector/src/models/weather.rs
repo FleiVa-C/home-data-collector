@@ -3,11 +3,11 @@ use serde_derive::Serialize;
 use serde_json::Value;
 use std::iter::zip;
 
-use hdc_shared::models as models;
+use super::shelly_v1::IsSignalResponse;
+use hdc_shared::models;
 use models::ingestion_container::*;
 use models::tasklist::TaskType;
 use models::weather_adapter_light::WeatherAdapterLight;
-use super::shelly_v1::IsSignalResponse;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -46,7 +46,7 @@ pub struct Metric {
     pub elev: f64,
 }
 
-impl WeatherResponse{
+impl WeatherResponse {
     pub fn iter(&self) -> WeatherResponseIterator<'_> {
         WeatherResponseIterator {
             inner: self,
@@ -60,7 +60,7 @@ pub struct WeatherResponseIterator<'a> {
     index: u8,
 }
 
-impl <'a> Iterator for WeatherResponseIterator<'a> {
+impl<'a> Iterator for WeatherResponseIterator<'a> {
     type Item = &'a f64;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -83,25 +83,23 @@ impl <'a> Iterator for WeatherResponseIterator<'a> {
     }
 }
 
-impl IsSignalResponse for WeatherResponse{
+impl IsSignalResponse for WeatherResponse {
     fn to_ingestion_packet(self, task_type: TaskType) -> IngestionPacket {
         let mut data: Vec<Measurement> = Vec::new();
-        let meta_data: Option<WeatherAdapterLight> = match task_type{
+        let meta_data: Option<WeatherAdapterLight> = match task_type {
             TaskType::WeatherTask(adapter) => Some(adapter),
-            _ => None
+            _ => None,
         };
         let meters = self.iter();
         let emeters_uuid = meta_data.unwrap();
         let ts: i64 = self.epoch;
-        for (uuid, value) in zip(emeters_uuid.iter(), meters){
-            data.push(Measurement{
+        for (uuid, value) in zip(emeters_uuid.iter(), meters) {
+            data.push(Measurement {
                 timestamp: ts.clone(),
                 uuid: uuid.clone(),
                 value: *value,
             });
-        };
-        IngestionPacket {
-            data
         }
+        IngestionPacket { data }
     }
 }

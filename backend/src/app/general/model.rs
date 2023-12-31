@@ -2,14 +2,14 @@ use actix_web::http;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
-pub struct DefaultErrorResponse {
+pub struct BasicErrorMessage {
     pub status: u16,
     pub message: String,
 }
 
-impl DefaultErrorResponse {
+impl BasicErrorMessage {
     pub fn init(code: http::StatusCode, msg: String) -> Self {
-        DefaultErrorResponse {
+        BasicErrorMessage {
             status: code.as_u16(),
             message: msg,
         }

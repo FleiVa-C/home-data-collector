@@ -1,9 +1,9 @@
-use std::iter::Iterator;
-use serde::{Serialize, Deserialize};
 use super::weather_adapter::WeatherAdapter;
+use serde::{Deserialize, Serialize};
+use std::iter::Iterator;
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct WeatherAdapterLight{
+pub struct WeatherAdapterLight {
     pub temp: String,
     pub dewpoint: String,
     pub windchill: String,
@@ -15,12 +15,12 @@ pub struct WeatherAdapterLight{
     pub solar_radiaton: String,
     pub uv: String,
     pub wind_dir: String,
-    pub humidity: String
+    pub humidity: String,
 }
 
-impl From<WeatherAdapter> for WeatherAdapterLight{
+impl From<WeatherAdapter> for WeatherAdapterLight {
     fn from(value: WeatherAdapter) -> WeatherAdapterLight {
-        WeatherAdapterLight{
+        WeatherAdapterLight {
             temp: String::from(value.temp),
             dewpoint: String::from(value.dewpoint),
             windchill: String::from(value.windchill),
@@ -37,7 +37,7 @@ impl From<WeatherAdapter> for WeatherAdapterLight{
     }
 }
 
-impl WeatherAdapterLight{
+impl WeatherAdapterLight {
     pub fn iter(&self) -> WeatherIterator<'_> {
         WeatherIterator {
             inner: self,
@@ -51,7 +51,7 @@ pub struct WeatherIterator<'a> {
     index: u8,
 }
 
-impl <'a> Iterator for WeatherIterator<'a> {
+impl<'a> Iterator for WeatherIterator<'a> {
     type Item = &'a String;
 
     fn next(&mut self) -> Option<Self::Item> {

@@ -1,27 +1,26 @@
-use serde::{Serialize, Deserialize};
 use super::shelly_v1_adapter::ShellyV1Adapter;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct ShellyV1AdapterLight{
-        pub emeter_1: String,
-        pub emeter_2: String,
-        pub emeter_3: String,
-        pub emeter_4: String
+pub struct ShellyV1AdapterLight {
+    pub emeter_1: String,
+    pub emeter_2: String,
+    pub emeter_3: String,
+    pub emeter_4: String,
 }
 
 impl From<ShellyV1Adapter> for ShellyV1AdapterLight {
     fn from(value: ShellyV1Adapter) -> Self {
-        ShellyV1AdapterLight{
+        ShellyV1AdapterLight {
             emeter_1: String::from(value.emeter_1),
             emeter_2: String::from(value.emeter_2),
             emeter_3: String::from(value.emeter_3),
-            emeter_4: String::from(value.emeter_4) 
+            emeter_4: String::from(value.emeter_4),
         }
     }
-
 }
 
-impl ShellyV1AdapterLight{
+impl ShellyV1AdapterLight {
     pub fn iter(&self) -> ShellyV1Iterator<'_> {
         ShellyV1Iterator {
             inner: self,
@@ -35,7 +34,7 @@ pub struct ShellyV1Iterator<'a> {
     index: u8,
 }
 
-impl <'a> Iterator for ShellyV1Iterator<'a> {
+impl<'a> Iterator for ShellyV1Iterator<'a> {
     type Item = &'a String;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -50,4 +49,3 @@ impl <'a> Iterator for ShellyV1Iterator<'a> {
         Some(ret)
     }
 }
-

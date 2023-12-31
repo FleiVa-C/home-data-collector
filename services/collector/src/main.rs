@@ -4,9 +4,9 @@ use clokwerk::{Job, Scheduler, TimeUnits};
 use std::thread;
 use std::time::{Duration, SystemTime};
 
+mod collector;
 mod models;
 mod scheduler;
-mod collector;
 
 use scheduler::taskforce;
 
