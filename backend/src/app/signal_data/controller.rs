@@ -1,6 +1,6 @@
 use std::ops::Bound;
 
-use hdc_shared::models::signal_meta::Signal;
+use hdc_shared::models::signal_meta::SignalMeta;
 use crate::sdb::SDBRepository;
 use hdc_shared::models::ingestion_container::*;
 use hdc_shared::models::signal_data::*;
@@ -45,10 +45,10 @@ impl SDBRepository {
         let mut query = data.signals.into_iter();
 
         while let Some(signal) = query.next() {
-            let signal_query: Result<Option<Signal>, surrealdb::Error> =
+            let signal_query: Result<Option<SignalMeta>, surrealdb::Error> =
                 self.db.select(("signal", &signal)).await;
             let signal_response = match signal_query {
-                Ok(response) => response.unwrap_or(Signal::not_found(&signal)),
+                Ok(response) => response.unwrap(),
                 Err(_) => return QueryResponse::Failed,
             };
             let ts_query: Result<Vec<DataPoint>, surrealdb::Error> = self
@@ -63,10 +63,10 @@ impl SDBRepository {
             match ts_query {
                 Ok(result) => {
                     let response = SignalData {
-                        signal_uuid: signal_response.uuid,
+                        signal_uuid: signal_response.uuid.unwrap(),
                         signal_name: signal_response.name,
                         uom: signal_response.uom,
-                        display_uom: signal_response.display_uom,
+                        display_uom: signal_response.uom_symbol,
                         data: result,
                     };
 

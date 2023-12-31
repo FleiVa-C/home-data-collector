@@ -18,4 +18,12 @@ impl ShellyV1Adapter{
         self.emeter_3.add_uuid(interface_uuid);
         self.emeter_4.add_uuid(interface_uuid);
     }
+    pub fn get_signals(&self) -> Vec<SignalMeta> {
+        let mut signal: Vec<SignalMeta> = Vec::new();
+        signal.push(self.emeter_1.clone());
+        signal.push(self.emeter_2.clone());
+        signal.push(self.emeter_3.clone());
+        signal.push(self.emeter_4.clone());
+        signal
+    }
 }

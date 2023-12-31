@@ -12,8 +12,8 @@ use futures::StreamExt;
 use serde::{Deserialize, Serialize};
 
 use crate::app::signal_data::error::QueryError;
-use hdc_shared::models::signal_data::*;
 use crate::sdb::SDBRepository;
+use hdc_shared::models::signal_data::*;
 use hdc_shared::models::ingestion_container::*;
 
 #[post("v1/ingest")]
