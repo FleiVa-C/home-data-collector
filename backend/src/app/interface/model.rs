@@ -25,7 +25,7 @@ impl InterfaceQuery {
             Some(uuid) => {
                 if arg_count > 0 {
                     arg_count += 1;
-                    format!("AND uuid = '{}'", uuid)
+                    format!(" AND uuid = '{}'", uuid)
                 } else {
                     arg_count += 1;
                     format!("uuid = '{}'", uuid)
@@ -38,7 +38,7 @@ impl InterfaceQuery {
             Some(interface) => {
                 if arg_count > 0 {
                     arg_count += 1;
-                    format!("AND interface_type = '{}'", interface)
+                    format!(" AND interface_type = '{}'", interface)
                 } else {
                     arg_count += 1;
                     format!("interface_type = '{}'", interface)
@@ -47,7 +47,7 @@ impl InterfaceQuery {
             None => "".to_owned(),
         };
         format!(
-            "SELECT * FROM interface WHERE {} {} {}",
+            "SELECT * FROM interface WHERE {}{}{}",
             url, uuid, interface
         )
     }

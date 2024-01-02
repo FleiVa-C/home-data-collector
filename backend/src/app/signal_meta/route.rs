@@ -9,20 +9,21 @@ use actix_web::{
 use derive_more::Display;
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
+use surrealdb::error::Api;
 
 use super::model::SignalMetaQuery;
-use crate::app::general::error::BackendError;
+use crate::app::general::error::{BackendError, unpack_surrealdb_error};
 use crate::sdb::SDBRepository;
 use hdc_shared::models::signal_meta::SignalMeta;
 
-#[get("v1/get_signal_all")]
+#[get("v1/get_all_signals")]
 pub async fn get_signal_all(
     sdb_repo: Data<SDBRepository>,
 ) -> Result<Json<Vec<SignalMeta>>, BackendError> {
     let response: Result<Vec<SignalMeta>, surrealdb::Error> = sdb_repo.get_all_signals().await;
     match response {
         Ok(response) => Ok(Json(response)),
-        Err(_) => Err(BackendError::NotFound),
+        Err(_) => Err(BackendError::SomethingWentWrong("Something went wrong.".to_string())),
     }
 }
 
@@ -35,6 +36,12 @@ pub async fn query_signal_meta(
         sdb_repo.query_signal_meta(query.into_inner()).await;
     match response {
         Ok(response) => Ok(Json(response)),
-        Err(_) => Err(BackendError::NotFound),
+        Err(e) => {
+            let error = unpack_surrealdb_error(e).unwrap();
+            match error {
+                Api::Query(msg) => Err(BackendError::MalformedQuerry(msg)),
+                _ => Err(BackendError::SomethingWentWrong("Something went wrong.".to_string()))
+                 }
+        }
     }
 }

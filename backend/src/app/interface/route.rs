@@ -10,11 +10,12 @@ use actix_web::{
     HttpResponse,
 };
 use futures::StreamExt;
+use log::*;
 use serde::{Deserialize, Serialize};
 use std::io;
-use surrealdb::Error;
+use surrealdb::{Error, error::Api};
 
-use crate::app::general::error::BackendError;
+use crate::app::general::error::{BackendError, unpack_surrealdb_error};
 use crate::sdb::SDBRepository;
 
 use hdc_shared::models::{
@@ -47,9 +48,14 @@ pub async fn register_interface(
     let response = sdb_repo.register_interface(interface).await;
     match response {
         Ok(()) => Ok(Json("Success".to_string())),
-        Err(_) => Err(BackendError::AlreadyExists(
-            "Interface already exists.".to_string(),
-        )),
+        Err(e) => {
+            info!("{}",e);
+            let error = unpack_surrealdb_error(e).unwrap();
+            match error {
+                Api::Query(msg) => Err(BackendError::AlreadyExists(msg)),
+                _ => Err(BackendError::SomethingWentWrong("Something went wrong.".to_string()))
+                 }
+        }
     }
 }
 
@@ -60,20 +66,10 @@ pub async fn get_all_interfaces(
     let response: Result<Vec<Interface>, surrealdb::Error> = sdb_repo.get_all_interfaces().await;
     match response {
         Ok(response) => Ok(Json(response)),
-        Err(_) => Err(BackendError::NotFound),
-    }
-}
-
-#[get("v1/get_interface/{interface_url}")]
-pub async fn get_interface(
-    sdb_repo: Data<SDBRepository>,
-    interface_url: Path<String>,
-) -> Result<Json<Interface>, BackendError> {
-    let response: Result<Interface, surrealdb::Error> =
-        sdb_repo.get_interface(interface_url.into_inner()).await;
-    match response {
-        Ok(response) => Ok(Json(response)),
-        Err(_) => Err(BackendError::NotFound),
+        Err(e) => {
+            info!("{}", e);
+            Err(BackendError::SomethingWentWrong("Something went wrong".to_string()))
+        }
     }
 }
 
@@ -82,7 +78,10 @@ pub async fn get_tasks(sdb_repo: Data<SDBRepository>) -> Result<Json<TaskList>, 
     let response: Result<Vec<CollectorTask>, surrealdb::Error> = sdb_repo.get_tasks().await;
     match response {
         Ok(response) => Ok(Json(TaskList { tasks: response })),
-        Err(_) => Err(BackendError::NotFound),
+        Err(e) => { 
+            info!("{}", e);
+            Err(BackendError::NotFound)
+        }
     }
 }
 
@@ -95,6 +94,13 @@ pub async fn query_interface(
         sdb_repo.query_interfaces(query.into_inner()).await;
     match response {
         Ok(response) => Ok(Json(response)),
-        Err(_) => Err(BackendError::NotFound),
+        Err(e) => {
+            info!("{}", e);
+            let error = unpack_surrealdb_error(e).unwrap();
+            match error {
+                Api::Query(msg) => Err(BackendError::MalformedQuerry(msg)),
+                _ => Err(BackendError::SomethingWentWrong("Something went wrong.".to_string()))
+                 }
+        }
     }
 }

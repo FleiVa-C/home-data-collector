@@ -4,19 +4,27 @@ use super::shelly_v2_adapter_light::ShellyV2AdapterLight;
 use super::weather_adapter_light::WeatherAdapterLight;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct TaskList {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Tasklist {
     pub tasks: Vec<CollectorTask>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+impl Tasklist {
+    pub fn new() -> Tasklist {
+        Tasklist{
+            tasks: Vec::new()
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CollectorTask {
     pub url: String,
     pub interface_type: InterfaceType,
     pub signals: TaskType,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum TaskType {
     ShellyV1Task(ShellyV1AdapterLight),
     ShellyV2Task(ShellyV2AdapterLight),

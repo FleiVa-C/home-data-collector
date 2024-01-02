@@ -20,7 +20,7 @@ impl SDBRepository {
         let result: Vec<Interface> = existing.take(0)?;
         match result.len() {
             0 => (),
-            _ => return Err(Error::Api(Api::Query("Already exists".to_string()))),
+            _ => return Err(Error::Api(Api::Query("Already exists.".to_string()))),
         }
 
         let signals: Vec<SignalMeta> = interface.signals.get_signals();
@@ -40,13 +40,6 @@ impl SDBRepository {
         match created {
             Some(_) => Ok(()),
             None => Ok(()),
-        }
-    }
-    pub async fn get_interface(&self, interface: String) -> Result<Interface, surrealdb::Error> {
-        let response: Option<Interface> = self.db.select(("interface", interface)).await?;
-        match response {
-            Some(value) => Ok(value),
-            None => Err(Error::Api(Api::Query("No Interfaces found".to_string()))),
         }
     }
 

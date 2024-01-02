@@ -5,7 +5,7 @@ use super::weather_adapter::WeatherAdapter;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum InterfaceType {
     ShellyV1,
     ShellyV2,

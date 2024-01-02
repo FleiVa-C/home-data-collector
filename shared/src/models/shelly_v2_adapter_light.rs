@@ -1,7 +1,7 @@
 use super::shelly_v2_adapter::ShellyV2Adapter;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ShellyV2AdapterLight {
     pub temp_100: String,
     pub temp_101: String,

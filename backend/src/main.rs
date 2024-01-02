@@ -16,6 +16,7 @@ use sdb::SDBRepository;
 async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "debug");
     std::env::set_var("RUST_BACKTRACE", "1");
+
     env_logger::init();
 
     let sdb_repo: SDBRepository = SDBRepository::init().await;
@@ -29,7 +30,6 @@ async fn main() -> std::io::Result<()> {
             .service(get_signal_all)
             .service(ingest)
             .service(query_timeseries)
-            .service(get_interface)
             .service(register_interface)
             .service(get_all_interfaces)
             .service(get_tasks)

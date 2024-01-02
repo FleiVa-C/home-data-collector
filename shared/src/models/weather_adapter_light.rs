@@ -2,7 +2,7 @@ use super::weather_adapter::WeatherAdapter;
 use serde::{Deserialize, Serialize};
 use std::iter::Iterator;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct WeatherAdapterLight {
     pub temp: String,
     pub dewpoint: String,
