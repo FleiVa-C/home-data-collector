@@ -20,9 +20,8 @@ use crate::sdb::SDBRepository;
 
 use hdc_shared::models::{
     interface::{Interface, InterfaceType},
-    tasklist::{CollectorTask, TaskList}
+    tasklist::{CollectorTask, Tasklist}
 };
-
 #[post("v1/register_interface/{interface_type}")]
 pub async fn register_interface(
     sdb_repo: Data<SDBRepository>,
@@ -74,12 +73,11 @@ pub async fn get_all_interfaces(
 }
 
 #[get("v1/get_tasks")]
-pub async fn get_tasks(sdb_repo: Data<SDBRepository>) -> Result<Json<TaskList>, BackendError> {
+pub async fn get_tasks(sdb_repo: Data<SDBRepository>) -> Result<Json<Tasklist>, BackendError> {
     let response: Result<Vec<CollectorTask>, surrealdb::Error> = sdb_repo.get_tasks().await;
     match response {
-        Ok(response) => Ok(Json(TaskList { tasks: response })),
-        Err(e) => { 
-            info!("{}", e);
+        Ok(response) => Ok(Json(Tasklist { tasks: response })),
+        Err(e) => { info!("{}", e);
             Err(BackendError::NotFound)
         }
     }

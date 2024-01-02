@@ -15,7 +15,7 @@ mod taskforce;
 use taskforce::{taskforce, tasklist_observer};
 
 fn main() {
-    std::env::set_var("RUST_LOG", "debug");
+    std::env::set_var("RUST_LOG", "info");
     env_logger::init();
     let mut scheduler = Scheduler::with_tz(chrono::Utc);
 
@@ -35,10 +35,12 @@ fn main() {
         .as_secs()
         % COLLECTOR_INTERVAL;
 
-    let start: NaiveTime = now.time() + Duration::from_secs(30 - offset);
+    let taskforce_start: NaiveTime = now.time() + Duration::from_secs(30 - offset);
+    let observer_start: NaiveTime = now.time() + Duration::from_secs(15 - (offset - 15));
+
     scheduler
         .every(1.day())
-        .at_time(start)
+        .at_time(taskforce_start)
         .repeating_every((COLLECTOR_INTERVAL as u32).seconds())
         .times((SECONDS_IN_DAY / COLLECTOR_INTERVAL - 1) as usize)
         .run(|| {
@@ -46,7 +48,7 @@ fn main() {
         });
     scheduler
         .every(1.day())
-        .at_time(start)
+        .at_time(observer_start)
         .repeating_every((TASK_UPDATE_INTERVAL as u32).seconds())
         .times((SECONDS_IN_DAY / TASK_UPDATE_INTERVAL - 1) as usize)
         .run( || {

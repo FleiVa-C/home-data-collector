@@ -28,7 +28,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(logger)
             .app_data(sdb_data)
             .service(get_signal_all)
-            .service(ingest)
+            //.service(ingest)
             .service(query_timeseries)
             .service(register_interface)
             .service(get_all_interfaces)
