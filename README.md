@@ -42,4 +42,4 @@ This project is licensed under the [MIT] License - see the LICENSE.md file for d
 ## Acknowledgments
 
 * [awesome-readme](https://github.com/matiassingers/awesome-readme)
-* [example backend service with actix-web - by Code to the moon] (https://www.youtube.com/watch?v=L8tWKqSMKUI&list=PLqnVCl9hPjM4wvPyuRerufBmaOTx7OMLo&index=5&t=938s)
+* [example backend service with actix-web - by Code to the moon](https://www.youtube.com/watch?v=L8tWKqSMKUI&list=PLqnVCl9hPjM4wvPyuRerufBmaOTx7OMLo&index=5&t=938s)
