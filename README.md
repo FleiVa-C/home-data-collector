@@ -8,9 +8,13 @@ It is used to have an on premise database of all the IOT devices, rather than ha
 The core component is the actix web backend service that provides REST API endpoints for operations like registering a new device, ingesting timeseries data or querying timeseries/meta data of the sensors.
 To store all data (not only timeseries data), a surrealdb instance is used. Collection of the timeseries data is managed by a collector service that requests the sensor data at equal intervals and ingests them through the backend REST API's.
 
+## Notes
+This project is not finished or ready to be run at all. Therefore the chapter "Deployment" is just a placeholder on what i think will be needed or is yet to be created.
+Since i work alone in this project, branches/pull requests/merges would not be needed but it was for me to learn git. Also i use issues to track on what is on my mind.
+
 ## Deployment
 
-The project is designed to be ran in a k3s kubernetes cluster
+The project is designed to run in a k3s kubernetes cluster once the first version is done.
 
 ### Dependencies
 
@@ -32,8 +36,7 @@ docker build --tag <chosen_name_for_image> .
 * [@FleiVa-c](https://github.com/FleiVa-C)
 
 ## Version History
-* 0.1.0
-    * Initial Release
+* no "release" yet - see [Notes] (#notes)
 
 ## License
 
