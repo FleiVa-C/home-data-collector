@@ -36,7 +36,7 @@ docker build --tag <chosen_name_for_image> .
 * [@FleiVa-c](https://github.com/FleiVa-C)
 
 ## Version History
-* no "release" yet - see [Notes] (#notes)
+* no "release" yet - see [Notes](#notes)
 
 ## License
 
