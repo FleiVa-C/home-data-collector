@@ -3,7 +3,6 @@
 members = [
     "backend",
     "services/collector",
-    "services/buffer_agent",
     "shared"
 
 ]

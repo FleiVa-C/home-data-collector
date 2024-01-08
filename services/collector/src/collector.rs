@@ -5,59 +5,52 @@ use serde::de::DeserializeOwned;
 use log::{error, info, warn};
 use tokio::runtime::Runtime;
 use std::time::Duration;
+use std::sync::mpsc::Sender;
 
-use timeseries_data::buffer_agent_client::BufferAgentClient;
-use timeseries_data::{BufferRequest, BufferResponse};
-
-pub mod timeseries_data {
-    tonic::include_proto!("timeseries_buffer");
-}
-
-pub fn extract<S>(task: CollectorTask) -> Result<(), Error>
+pub async fn extract<S>(task: CollectorTask,
+                        ingestion_url: &str,
+                        sender_channel: Sender<IngestionPacket>) -> Result<(), Error>
 where
     S: DeserializeOwned + IsSignalResponse,
 {
-    let client = reqwest::blocking::Client::new();
-    let body = client.get(task.url).send()?.json::<S>();
+    let client = reqwest::Client::new();
+    let body = reqwest::get(task.url)
+        .await?
+        .json::<S>()
+        .await?;
 
-    let ingestion_body: IngestionPacket = match body {
-        Ok(response) => response.to_ingestion_packet(task.signals),
-        Err(e) => return Err(e),
-    };
-    let response = client
-        .post("http://127.0.0.1:8080/v1/ingest")
+    let ingestion_body: IngestionPacket = body.to_ingestion_packet(task.signals);
+    let response = client.post(ingestion_url)
         .body(serde_json::to_string(&ingestion_body).unwrap())
         .send()
-        .unwrap();
+        .await.unwrap();
     match response.status() {
         StatusCode::OK => (), 
         _ => {
             error!("Ingestion failed, backend unreachable");
-            let rt = Runtime::new().unwrap();
-            rt.block_on(async move {
-                let buffer_response = send_data_to_buffer(&ingestion_body).await;
+            let mut retry_count: u64 = 0;
+            loop{
+                let buffer_response = sender_channel.send(ingestion_body.clone());
                 match buffer_response {
-                    Ok(_) => info!("Sent failed ingestiondata to the BufferAgent"),
+                    Ok(_) => {
+                        info!("Sent failed ingestiondata to the buffer.");
+                        break
+                    },
                     Err(_) => {
-                        let mut retry_count: i32 = 0;
-                        warn!("Unable to reach BufferAgent, retrying in 10s");
-                        std::thread::sleep(Duration::from_secs(10));
+                        if retry_count < 5{
+                            retry_count+= 1;
+                            warn!("Unable to reach BufferAgent, retrying in 10s.");
+                            std::thread::sleep(Duration::from_secs(10));
+                        }else{
+                            error!("Retried for 5 times, aborting buffering");
+                            break
+                        }
                     }
                 }
-            });
+            }
             ()
         },
         };
 
     Ok(()) 
-}
-
-async fn send_data_to_buffer(ingestion_data: &IngestionPacket) -> Result<(), Box<dyn std::error::Error>>{
-    let mut client = BufferAgentClient::connect("http://[::1]:50051").await?;
-    
-    let request = tonic::Request::new(
-        BufferRequest{data: serde_json::to_vec(ingestion_data).unwrap()}
-        );
-    let response = client.send_timeseries_buffer(request).await?;
-    Ok(())
 }

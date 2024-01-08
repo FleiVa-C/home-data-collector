@@ -10,7 +10,7 @@ pub struct Tasklist {
 }
 
 impl Tasklist {
-    pub fn new() -> Tasklist {
+    pub const fn new() -> Tasklist {
         Tasklist{
             tasks: Vec::new()
         }

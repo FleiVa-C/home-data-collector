@@ -1,62 +1,85 @@
 #![allow(unused)]
-use chrono::{NaiveTime, Utc};
-use clokwerk::{Job, Scheduler, TimeUnits};
+use tokio::time::{interval_at, Duration, Instant};
+use tokio::sync::{OnceCell};
+use std::sync::{mpsc::channel, RwLock};
+use std::time::SystemTime;
+use surrealdb::Surreal;
+use surrealdb::engine::local::{File, Db};
+
 use hdc_shared::models::ingestion_container::IngestionPacket;
 use hdc_shared::models::tasklist::Tasklist;
-use std::thread;
-use std::sync::{mpsc::channel, RwLock};
-use std::time::{Duration, SystemTime};
-use once_cell::sync::Lazy;
-
 mod collector;
 mod models;
 mod taskforce;
+mod buffer;
 
 use taskforce::{taskforce, tasklist_observer};
+use buffer::{buffer_handler, buffer_ingestor};
 
-fn main() {
-    std::env::set_var("RUST_LOG", "info");
+static TASKLIST: RwLock<Tasklist> = RwLock::new(Tasklist::new());
+static LOCAL_DB: OnceCell<Surreal<Db>> = OnceCell::const_new();
+const DB_PATH: &str = "home/reberfla/test/temp.db";
+const INGESTION_URL: &str = "http://127.0.0.1:8080/v1/ingest";
+const TASKLIST_URL: &str = "http://127.0.0.1:8080/v1/get_tasks";
+const COLLECTOR_INTERVAL: u64 = 30;
+const TASK_UPDATE_INTERVAL: u64 = 300;
+const BUFFER_INGESTION_INTERVAL: u64 = 600;
+
+#[tokio::main(flavor = "multi_thread", worker_threads = 20)]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    std::env::set_var("RUST_LOG", "debug");
     env_logger::init();
-    let mut scheduler = Scheduler::with_tz(chrono::Utc);
 
-    const COLLECTOR_INTERVAL: u64 = 30;
-    const TASK_UPDATE_INTERVAL: u64 = 300;
-    const SECONDS_IN_DAY: u64 = 60 * 24;
+    LOCAL_DB.get_or_init(|| async {
+        let db = Surreal::new::<File>(DB_PATH).await.expect("cant connect to local db");
+        db.use_ns("test").use_db("test").await;
+        db
+    }).await;
 
-    static TASKLIST: Lazy<RwLock<Tasklist>> = Lazy::new(|| {
-        RwLock::new(Tasklist::new())
-    });
+    let (send, recv) = channel::<IngestionPacket>();
 
-    let now = Utc::now();
+    tasklist_observer(&TASKLIST, &TASKLIST_URL).await;
+
     let sys_time_now = SystemTime::now();
-    let offset = sys_time_now
+    let start_offset = sys_time_now
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap()
         .as_secs()
         % COLLECTOR_INTERVAL;
 
-    let taskforce_start: NaiveTime = now.time() + Duration::from_secs(30 - offset);
-    let observer_start: NaiveTime = now.time() + Duration::from_secs(15 - (offset - 15));
+    let start_collecting = Instant::now() + Duration::from_secs(COLLECTOR_INTERVAL - start_offset);
 
-    scheduler
-        .every(1.day())
-        .at_time(taskforce_start)
-        .repeating_every((COLLECTOR_INTERVAL as u32).seconds())
-        .times((SECONDS_IN_DAY / COLLECTOR_INTERVAL - 1) as usize)
-        .run(|| {
-            let _ = taskforce(&TASKLIST);
-        });
-    scheduler
-        .every(1.day())
-        .at_time(observer_start)
-        .repeating_every((TASK_UPDATE_INTERVAL as u32).seconds())
-        .times((SECONDS_IN_DAY / TASK_UPDATE_INTERVAL - 1) as usize)
-        .run( || {
-            let _ = tasklist_observer(&TASKLIST);
+    tokio::spawn(
+        async move {
+            let mut interval = interval_at(start_collecting+Duration::from_secs(5)
+                                           , Duration::from_secs(TASK_UPDATE_INTERVAL));
+            loop {
+                interval.tick().await;
+                tasklist_observer(&TASKLIST, &TASKLIST_URL).await;
+            }
         });
 
-    loop {
-        scheduler.run_pending();
-        thread::sleep(Duration::from_millis(10));
-    }
+    tokio::spawn(
+        async move {
+            let mut interval = interval_at(start_collecting, Duration::from_secs(COLLECTOR_INTERVAL));
+            loop {
+                interval.tick().await;
+                taskforce(&TASKLIST, &INGESTION_URL, send.clone()).await;
+            }
+        });
+    tokio::spawn(
+        async move {
+            buffer_handler(&LOCAL_DB, recv).await;
+        });
+
+    tokio::spawn(
+        async move {
+            let mut interval = interval_at(start_collecting, Duration::from_secs(BUFFER_INGESTION_INTERVAL));
+            loop {
+                interval.tick().await;
+                buffer_ingestor(&LOCAL_DB, &INGESTION_URL);
+            }
+        });
+
+    loop {}
 }
