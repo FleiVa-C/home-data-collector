@@ -1,4 +1,5 @@
 #![allow(unused)]
+use log::{warn, info};
 use tokio::time::{interval_at, Duration, Instant};
 use tokio::sync::{OnceCell};
 use std::sync::{mpsc::channel, RwLock};
@@ -13,21 +14,22 @@ mod models;
 mod taskforce;
 mod buffer;
 
-use taskforce::{taskforce, tasklist_observer};
+use taskforce::{tasklist_observer, task_dispatcher};
 use buffer::{buffer_handler, buffer_ingestor};
 
 static TASKLIST: RwLock<Tasklist> = RwLock::new(Tasklist::new());
 static LOCAL_DB: OnceCell<Surreal<Db>> = OnceCell::const_new();
-const DB_PATH: &str = "home/reberfla/test/temp.db";
+const DB_PATH: &str = "test/temp.db";
 const INGESTION_URL: &str = "http://127.0.0.1:8080/v1/ingest";
 const TASKLIST_URL: &str = "http://127.0.0.1:8080/v1/get_tasks";
 const COLLECTOR_INTERVAL: u64 = 30;
 const TASK_UPDATE_INTERVAL: u64 = 300;
-const BUFFER_INGESTION_INTERVAL: u64 = 600;
+const BUFFER_INGESTION_INTERVAL: u64 = 120;
+const LOG_LEVEL: &str = "info";
 
 #[tokio::main(flavor = "multi_thread", worker_threads = 20)]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    std::env::set_var("RUST_LOG", "debug");
+    std::env::set_var("RUST_LOG", LOG_LEVEL);
     env_logger::init();
 
     LOCAL_DB.get_or_init(|| async {
@@ -47,7 +49,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .as_secs()
         % COLLECTOR_INTERVAL;
 
-    let start_collecting = Instant::now() + Duration::from_secs(COLLECTOR_INTERVAL - start_offset);
+    let start_collecting = Instant::now() + Duration::from_secs((COLLECTOR_INTERVAL - start_offset).try_into().unwrap());
 
     tokio::spawn(
         async move {
@@ -55,16 +57,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                            , Duration::from_secs(TASK_UPDATE_INTERVAL));
             loop {
                 interval.tick().await;
-                tasklist_observer(&TASKLIST, &TASKLIST_URL).await;
+                let tasklist_status = tasklist_observer(&TASKLIST, &TASKLIST_URL).await;
+                match tasklist_status {
+                    Ok(()) => info!("Tasklist updated"),
+                    Err(_) => warn!("Failed to get latest Tasklist")
+                }
             }
         });
 
     tokio::spawn(
         async move {
-            let mut interval = interval_at(start_collecting, Duration::from_secs(COLLECTOR_INTERVAL));
+            let mut interval = interval_at(start_collecting, Duration::from_secs(COLLECTOR_INTERVAL.try_into().unwrap()));
             loop {
                 interval.tick().await;
-                taskforce(&TASKLIST, &INGESTION_URL, send.clone()).await;
+                task_dispatcher(&TASKLIST, &INGESTION_URL, send.clone()).await;
             }
         });
     tokio::spawn(
@@ -74,10 +80,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     tokio::spawn(
         async move {
-            let mut interval = interval_at(start_collecting, Duration::from_secs(BUFFER_INGESTION_INTERVAL));
+            let mut interval = interval_at(start_collecting + Duration::from_secs(15), Duration::from_secs(BUFFER_INGESTION_INTERVAL));
             loop {
                 interval.tick().await;
-                buffer_ingestor(&LOCAL_DB, &INGESTION_URL);
+                let status = buffer_ingestor(&LOCAL_DB, &INGESTION_URL).await;
+                match status {
+                    Ok(()) => (),
+                    Err(e) => warn!("bufer_ingestor: {:?}", e.into_inner())
+                }
             }
         });
 

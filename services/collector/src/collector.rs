@@ -7,14 +7,14 @@ use tokio::runtime::Runtime;
 use std::time::Duration;
 use std::sync::mpsc::Sender;
 
-pub async fn extract<S>(task: CollectorTask,
+pub async fn collect<S>(task: CollectorTask,
                         ingestion_url: &str,
                         sender_channel: Sender<IngestionPacket>) -> Result<(), Error>
 where
     S: DeserializeOwned + IsSignalResponse,
 {
     let client = reqwest::Client::new();
-    let body = reqwest::get(task.url)
+    let body = reqwest::get(&task.url)
         .await?
         .json::<S>()
         .await?;
@@ -25,9 +25,11 @@ where
         .send()
         .await.unwrap();
     match response.status() {
-        StatusCode::OK => (), 
+        StatusCode::OK => {
+            info!("Sucessfully ingested data: {}@{}",ingestion_body.data[0].timestamp, task.url)
+        }, 
         _ => {
-            error!("Ingestion failed, backend unreachable");
+            warn!("Ingestion failed, backend unreachable");
             let mut retry_count: u64 = 0;
             loop{
                 let buffer_response = sender_channel.send(ingestion_body.clone());
