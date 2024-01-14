@@ -1,8 +1,10 @@
 #![allow(unused)]
+use config::CollectorConfig;
+use hdc_shared::utils::config::load_config;
 use log::{warn, info};
 use tokio::time::{interval_at, Duration, Instant};
-use tokio::sync::{OnceCell};
-use std::sync::{mpsc::channel, RwLock};
+use tokio::sync::{OnceCell, mpsc::channel};
+use std::sync::{RwLock, Arc};
 use std::time::SystemTime;
 use surrealdb::Surreal;
 use surrealdb::engine::local::{File, Db};
@@ -11,53 +13,49 @@ use hdc_shared::models::ingestion_container::IngestionPacket;
 use hdc_shared::models::tasklist::Tasklist;
 mod collector;
 mod models;
-mod taskforce;
+mod task;
 mod buffer;
+mod config;
 
-use taskforce::{tasklist_observer, task_dispatcher};
+use task::{tasklist_observer, task_dispatcher};
 use buffer::{buffer_handler, buffer_ingestor};
 
 static TASKLIST: RwLock<Tasklist> = RwLock::new(Tasklist::new());
 static LOCAL_DB: OnceCell<Surreal<Db>> = OnceCell::const_new();
-const DB_PATH: &str = "test/temp.db";
-const INGESTION_URL: &str = "http://127.0.0.1:8080/v1/ingest";
-const TASKLIST_URL: &str = "http://127.0.0.1:8080/v1/get_tasks";
-const COLLECTOR_INTERVAL: u64 = 30;
-const TASK_UPDATE_INTERVAL: u64 = 300;
-const BUFFER_INGESTION_INTERVAL: u64 = 120;
-const LOG_LEVEL: &str = "info";
 
-#[tokio::main(flavor = "multi_thread", worker_threads = 20)]
+#[tokio::main(flavor = "multi_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    std::env::set_var("RUST_LOG", LOG_LEVEL);
+    std::env::set_var("RUST_LOG", "info");
     env_logger::init();
+    let config: Arc<CollectorConfig> = Arc::new(CollectorConfig::load());
 
     LOCAL_DB.get_or_init(|| async {
-        let db = Surreal::new::<File>(DB_PATH).await.expect("cant connect to local db");
-        db.use_ns("test").use_db("test").await;
+        let db = Surreal::new::<File>(&config.db_path).await.expect("Cant connect to local db.");
+        db.use_ns("buffer").use_db("timeseries").await;
         db
     }).await;
 
-    let (send, recv) = channel::<IngestionPacket>();
+    let (send, mut recv) = channel::<IngestionPacket>(32);
 
-    tasklist_observer(&TASKLIST, &TASKLIST_URL).await;
+    tasklist_observer(&TASKLIST, &config.tasklist_url).await;
 
     let sys_time_now = SystemTime::now();
     let start_offset = sys_time_now
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap()
         .as_secs()
-        % COLLECTOR_INTERVAL;
+        % &config.collection_interval;
 
-    let start_collecting = Instant::now() + Duration::from_secs((COLLECTOR_INTERVAL - start_offset).try_into().unwrap());
+    let start_collecting = Instant::now() + Duration::from_secs((&config.collection_interval - start_offset).try_into().unwrap());
 
+    let tasklist_observer_config = config.clone();
     tokio::spawn(
         async move {
             let mut interval = interval_at(start_collecting+Duration::from_secs(5)
-                                           , Duration::from_secs(TASK_UPDATE_INTERVAL));
+                                           , Duration::from_secs(tasklist_observer_config.task_update_interval));
             loop {
                 interval.tick().await;
-                let tasklist_status = tasklist_observer(&TASKLIST, &TASKLIST_URL).await;
+                let tasklist_status = tasklist_observer(&TASKLIST, &tasklist_observer_config.tasklist_url).await;
                 match tasklist_status {
                     Ok(()) => info!("Tasklist updated"),
                     Err(_) => warn!("Failed to get latest Tasklist")
@@ -65,12 +63,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         });
 
+    let collector_config = config.clone();
+    let ingestion_url = Arc::new(collector_config.ingestion_url.clone());
     tokio::spawn(
         async move {
-            let mut interval = interval_at(start_collecting, Duration::from_secs(COLLECTOR_INTERVAL.try_into().unwrap()));
+            let mut interval = interval_at(start_collecting, Duration::from_secs(collector_config.collection_interval));
             loop {
                 interval.tick().await;
-                task_dispatcher(&TASKLIST, &INGESTION_URL, send.clone()).await;
+                task_dispatcher(&TASKLIST, ingestion_url.clone(), send.clone()).await;
             }
         });
     tokio::spawn(
@@ -78,12 +78,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             buffer_handler(&LOCAL_DB, recv).await;
         });
 
+    
+    let buffer_config = config.clone();
     tokio::spawn(
         async move {
-            let mut interval = interval_at(start_collecting + Duration::from_secs(15), Duration::from_secs(BUFFER_INGESTION_INTERVAL));
+            let mut interval = interval_at(start_collecting + Duration::from_secs(15), Duration::from_secs(buffer_config.buffer_ingestion_interval));
             loop {
                 interval.tick().await;
-                let status = buffer_ingestor(&LOCAL_DB, &INGESTION_URL).await;
+                let status = buffer_ingestor(&LOCAL_DB, &buffer_config.ingestion_url).await;
                 match status {
                     Ok(()) => (),
                     Err(e) => warn!("bufer_ingestor: {:?}", e.into_inner())

@@ -5,7 +5,7 @@ use reqwest::Client;
 use tokio::sync::OnceCell;
 use uuid::Uuid;
 use serde::{Serialize, Deserialize};
-use std::sync::mpsc::Receiver;
+use tokio::sync::mpsc::Receiver;
 use std::time::Duration;
 use std::io::Error;
 
@@ -16,8 +16,8 @@ struct BufferWrapper{
 }
 
 pub async fn buffer_handler(db_connection: &'static OnceCell<Surreal<Db>>,
-                            recv_channel: Receiver<IngestionPacket>) -> () {
-    while let Ok(data) = recv_channel.recv() {
+                            mut recv_channel: Receiver<IngestionPacket>) -> () {
+    while let Some(data) = recv_channel.recv().await {
         let data_packet = BufferWrapper{
             uuid: Uuid::new_v4().to_string(),
             packet: data
@@ -33,7 +33,7 @@ pub async fn buffer_handler(db_connection: &'static OnceCell<Surreal<Db>>,
             match local_db_response {
                 Ok(_) => {
                     info!("buffer_handler: Data added to local buffer.");
-                    return;
+                    break;
                 }
                 Err(_) => {
                     error!("buffer_handler: Data failed to add to local buffer, retrying in 5 seconds.");
@@ -42,7 +42,9 @@ pub async fn buffer_handler(db_connection: &'static OnceCell<Surreal<Db>>,
                 }
             }
         }
+        if retry_count != 0{
         error!("buffer_handler: Failed to add Data to local buffer after {} retries, aborting.", retry_count);
+        }
     }
 }
 
@@ -76,7 +78,7 @@ let db = db_connection.get().unwrap();
 
                         }
                     },
-                    Err(_) => error!("buffer_ingestor: failed to ingest packet, will keep in buffer for next ingestion")
+                    Err(_) => warn!("buffer_ingestor: failed to ingest packet, will keep in buffer for next ingestion")
                 }
             };
         }else{

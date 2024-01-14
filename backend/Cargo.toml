@@ -21,6 +21,7 @@ futures = "0.3.29"
 serde_json = "1.0.107"
 chrono = "0.4.31"
 hdc_shared = { path = "../shared"}
+toml = "0.8.8"
 
 [dev-dependencies]
 anyhow = "1"
