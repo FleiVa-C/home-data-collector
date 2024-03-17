@@ -1,9 +1,10 @@
 use super::signal_meta::*;
+use crate::models::interface::IsAdapter;
 use serde::{Deserialize, Serialize};
 use std::io::{self, Error};
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ShellyV2Adapter {
     pub temp_100: SignalMeta,
     pub temp_101: SignalMeta,
@@ -11,19 +12,19 @@ pub struct ShellyV2Adapter {
     pub temp_103: SignalMeta,
 }
 
-impl ShellyV2Adapter {
-    pub fn add_uuid(&mut self, interface_uuid: &String) {
+impl IsAdapter for ShellyV2Adapter {
+    fn add_uuid(&mut self, interface_uuid: &String) {
         self.temp_100.add_uuid(interface_uuid);
         self.temp_101.add_uuid(interface_uuid);
         self.temp_102.add_uuid(interface_uuid);
         self.temp_103.add_uuid(interface_uuid);
     }
-    pub fn get_signals(&self) -> Vec<SignalMeta> {
-        let mut signals: Vec<SignalMeta> = Vec::new();
-        signals.push(self.temp_100.clone());
-        signals.push(self.temp_101.clone());
-        signals.push(self.temp_102.clone());
-        signals.push(self.temp_103.clone());
-        signals
+    fn get_signals(&self) -> Vec<SignalMeta> {
+        let mut signal: Vec<SignalMeta> = Vec::new();
+        signal.push(self.temp_100.clone());
+        signal.push(self.temp_101.clone());
+        signal.push(self.temp_102.clone());
+        signal.push(self.temp_103.clone());
+        signal
     }
 }

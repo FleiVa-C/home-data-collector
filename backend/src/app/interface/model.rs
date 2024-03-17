@@ -1,22 +1,21 @@
 use serde::{Deserialize, Serialize};
 
-use hdc_shared::models::interface::InterfaceType;
-
 #[derive(Serialize, Deserialize)]
 pub struct InterfaceQuery {
-    base_url: Option<String>,
+    url: Option<String>,
     uuid: Option<String>,
     interface_type: Option<String>,
+    name: Option<String>,
 }
 
 impl InterfaceQuery {
     pub fn build_sql_query(&self) -> String {
         let mut arg_count: u8 = 0;
 
-        let url = match &self.base_url {
+        let url = match &self.url {
             Some(url) => {
                 arg_count += 1;
-                format!("base_url = '{}'", url)
+                format!("url = '{}'", url)
             }
             None => "".to_owned(),
         };
@@ -46,9 +45,26 @@ impl InterfaceQuery {
             }
             None => "".to_owned(),
         };
-        format!(
-            "SELECT * FROM interface WHERE {}{}{}",
-            url, uuid, interface
-        )
+
+        let name = match &self.name {
+            Some(name) => {
+                if arg_count > 0 {
+                    arg_count += 1;
+                    format!(" AND name = '{}'", name)
+                } else {
+                    arg_count += 1;
+                    format!("name = '{}'", name)
+                }
+            }
+            None => "".to_owned(),
+        };
+        if arg_count < 1{
+            format!("SELECT * FROM interface")
+        }else{
+            format!(
+                "SELECT * FROM interface WHERE {}{}{}{}",
+                url, uuid, interface, name
+            )
+        }
     }
 }

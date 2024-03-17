@@ -38,7 +38,6 @@ async fn main() -> std::io::Result<()> {
             .service(ingest)
             .service(query_timeseries)
             .service(register_interface)
-            .service(get_all_interfaces)
             .service(get_tasks)
             .service(query_interface)
     })

@@ -1,7 +1,8 @@
 use super::signal_meta::*;
+use crate::models::interface::IsAdapter;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct WeatherAdapter {
     pub temp: SignalMeta,
     pub dewpoint: SignalMeta,
@@ -17,8 +18,8 @@ pub struct WeatherAdapter {
     pub humidity: SignalMeta,
 }
 
-impl WeatherAdapter {
-    pub fn add_uuid(&mut self, interface_uuid: &String) {
+impl IsAdapter for WeatherAdapter {
+    fn add_uuid(&mut self, interface_uuid: &String) {
         self.temp.add_uuid(interface_uuid);
         self.dewpoint.add_uuid(interface_uuid);
         self.windchill.add_uuid(interface_uuid);
@@ -32,20 +33,20 @@ impl WeatherAdapter {
         self.wind_dir.add_uuid(interface_uuid);
         self.humidity.add_uuid(interface_uuid);
     }
-    pub fn get_signals(&self) -> Vec<SignalMeta> {
-        let mut signals: Vec<SignalMeta> = Vec::new();
-        signals.push(self.temp.clone());
-        signals.push(self.dewpoint.clone());
-        signals.push(self.windchill.clone());
-        signals.push(self.windspeed.clone());
-        signals.push(self.windgust.clone());
-        signals.push(self.pressure.clone());
-        signals.push(self.preciprate.clone());
-        signals.push(self.preciptotal.clone());
-        signals.push(self.solar_radiation.clone());
-        signals.push(self.uv.clone());
-        signals.push(self.wind_dir.clone());
-        signals.push(self.humidity.clone());
-        signals
+    fn get_signals(&self) -> Vec<SignalMeta> {
+        let mut signal: Vec<SignalMeta> = Vec::new();
+        signal.push(self.temp.clone());
+        signal.push(self.dewpoint.clone());
+        signal.push(self.windchill.clone());
+        signal.push(self.windspeed.clone());
+        signal.push(self.windgust.clone());
+        signal.push(self.pressure.clone());
+        signal.push(self.preciprate.clone());
+        signal.push(self.preciptotal.clone());
+        signal.push(self.solar_radiation.clone());
+        signal.push(self.uv.clone());
+        signal.push(self.wind_dir.clone());
+        signal.push(self.humidity.clone());
+        signal
     }
 }

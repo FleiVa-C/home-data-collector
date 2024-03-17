@@ -1,4 +1,4 @@
-use super::interface::{AdapterType, Interface, InterfaceType};
+use super::interface::{Interface, InterfaceModel, IsAdapter};
 use super::shelly_v1_adapter_light::ShellyV1AdapterLight;
 use super::shelly_v2_adapter_light::ShellyV2AdapterLight;
 use super::weather_adapter_light::WeatherAdapterLight;
@@ -20,7 +20,6 @@ impl Tasklist {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CollectorTask {
     pub url: String,
-    pub interface_type: InterfaceType,
     pub signals: TaskType,
 }
 
@@ -31,23 +30,23 @@ pub enum TaskType {
     WeatherTask(WeatherAdapterLight),
 }
 
-impl From<Interface> for CollectorTask {
-    fn from(value: Interface) -> Self {
-        let adapter: TaskType = match value.signals {
-            AdapterType::ShellyV1(adapter) => {
-                TaskType::ShellyV1Task(ShellyV1AdapterLight::from(adapter))
+impl From<InterfaceModel> for CollectorTask {
+    fn from(value: InterfaceModel) -> Self {
+        let url: String = value.get_url();
+        let adapter: TaskType = match value {
+            InterfaceModel::ShellyV1(model) => {
+                TaskType::ShellyV1Task(ShellyV1AdapterLight::from(model.signals))
             }
-            AdapterType::ShellyV2(adapter) => {
-                TaskType::ShellyV2Task(ShellyV2AdapterLight::from(adapter))
+            InterfaceModel::ShellyV2(model) => {
+                TaskType::ShellyV2Task(ShellyV2AdapterLight::from(model.signals))
             }
-            AdapterType::WeatherAPI(adapter) => {
-                TaskType::WeatherTask(WeatherAdapterLight::from(adapter))
+            InterfaceModel::WeatherAPI(model) => {
+                TaskType::WeatherTask(WeatherAdapterLight::from(model.signals))
             }
         };
 
         CollectorTask {
-            url: value.base_url,
-            interface_type: value.interface_type.unwrap(),
+            url,
             signals: adapter,
         }
     }

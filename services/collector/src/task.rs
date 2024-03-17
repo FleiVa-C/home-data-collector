@@ -8,8 +8,7 @@ use crate::models::shelly_v1::ShellyV1Response;
 use crate::models::shelly_v2::ShellyV2Response;
 use crate::models::weather::WeatherResponse;
 use hdc_shared::models::ingestion_container::IngestionPacket;
-use hdc_shared::models::interface::InterfaceType;
-use hdc_shared::models::tasklist::Tasklist;
+use hdc_shared::models::tasklist::{TaskType, Tasklist};
 
 pub async fn task_dispatcher(tasklist: &RwLock<Tasklist>,
                        ingestion_url: Arc<String>,
@@ -22,10 +21,10 @@ pub async fn task_dispatcher(tasklist: &RwLock<Tasklist>,
         info!("Dispatching extractor Task for {}.", &task.url);
         let channel = sender_channel.clone();
         let url = ingestion_url.clone();
-        match task.interface_type {
-            InterfaceType::ShellyV1 => tokio::spawn(async move {collect::<ShellyV1Response>(task, &url, channel).await}),
-            InterfaceType::ShellyV2 => tokio::spawn(async move {collect::<ShellyV2Response>(task, &url, channel).await}),
-            InterfaceType::WeatherAPI => tokio::spawn(async move {collect::<WeatherResponse>(task, &url, channel).await}),
+        match task.signals {
+            TaskType::ShellyV1Task(_) => tokio::spawn(async move {collect::<ShellyV1Response>(task, &url, channel).await}),
+            TaskType::ShellyV2Task(_) => tokio::spawn(async move {collect::<ShellyV2Response>(task, &url, channel).await}),
+            TaskType::WeatherTask(_) => tokio::spawn(async move {collect::<WeatherResponse>(task, &url, channel).await}),
             //SensorType::Smartfox => collect::<SmartfoxResponse>(task)
         };
     }

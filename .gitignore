@@ -2,3 +2,5 @@
 target
 */visual
 **/[Cc]onfig.toml
+/dev/*
+*/test/*

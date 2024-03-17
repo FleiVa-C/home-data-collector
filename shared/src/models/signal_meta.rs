@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use surrealdb::opt::RecordId;
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct SignalMeta {
     pub name: String,
     pub uuid: Option<String>,
