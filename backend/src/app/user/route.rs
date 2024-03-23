@@ -1,29 +1,24 @@
-use super::model::InterfaceQuery;
 use actix_web::{
+    error::{self, PayloadError, ResponseError},
     get,
-    http::{
-        header::{ContentLength, ContentType},
-        StatusCode,
-    },
-    post,
-    web::{self, Data, Header, Json, Path, Query},
+    http::{header::ContentLength, header::ContentType, StatusCode},
+    post, web,
+    web::{Data, Header, Json, Path, Query},
     HttpResponse,
 };
+use derive_more::Display;
 use futures::StreamExt;
-use log::*;
+use log::info;
 use serde::{Deserialize, Serialize};
-use std::io;
-use surrealdb::{error::Api, Error};
+use surrealdb::error::Api;
 
+use super::model::UserQuery;
 use crate::app::general::error::{unpack_surrealdb_error, BackendError};
 use crate::sdb::SDBRepository;
+use hdc_shared::models::user::User;
 
-use hdc_shared::models::{
-    interface::InterfaceModel,
-    tasklist::{CollectorTask, Tasklist},
-};
-#[post("v1/interface/register")]
-pub async fn register_interface(
+#[post("v1/user/register")]
+pub async fn register_user(
     sdb_repo: Data<SDBRepository>,
     mut payload: web::Payload,
     content_length: Header<ContentLength>,
@@ -38,10 +33,12 @@ pub async fn register_interface(
         }
         body.extend_from_slice(&chunk);
     }
-    let mut interface = serde_json::from_slice::<InterfaceModel>(&body)?;
-    interface.add_uuid();
+    println!("{:?}", body);
+    let mut user = serde_json::from_slice::<User>(&body)?;
+    println!("{:?}", user);
+    user.add_uuid();
 
-    let response = sdb_repo.register_interface(interface).await;
+    let response = sdb_repo.register_user(user).await;
     match response {
         Ok(()) => Ok(Json("Success".to_string())),
         Err(e) => {
@@ -56,26 +53,13 @@ pub async fn register_interface(
         }
     }
 }
-
-#[get("v1/tasks")]
-pub async fn get_tasks(sdb_repo: Data<SDBRepository>) -> Result<Json<Tasklist>, BackendError> {
-    let response: Result<Vec<CollectorTask>, surrealdb::Error> = sdb_repo.get_tasks().await;
-    match response {
-        Ok(response) => Ok(Json(Tasklist { tasks: response })),
-        Err(e) => {
-            info!("{}", e);
-            Err(BackendError::NotFound)
-        }
-    }
-}
-
-#[get("v1/interface")]
-pub async fn query_interface(
+#[post("v1/user")]
+pub async fn query_user(
     sdb_repo: Data<SDBRepository>,
-    query: Query<InterfaceQuery>,
-) -> Result<Json<Vec<InterfaceModel>>, BackendError> {
-    let response: Result<Vec<InterfaceModel>, surrealdb::Error> =
-        sdb_repo.query_interfaces(query.into_inner()).await;
+    query: Query<UserQuery>,
+) -> Result<Json<Vec<User>>, BackendError> {
+    let response: Result<Vec<User>, surrealdb::Error> =
+        sdb_repo.query_user(query.into_inner()).await;
     match response {
         Ok(response) => Ok(Json(response)),
         Err(e) => {

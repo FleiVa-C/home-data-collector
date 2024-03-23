@@ -5,8 +5,8 @@ use actix_web::{
     http::{header::ContentType, StatusCode},
     HttpResponse,
 };
-use surrealdb::Error;
 use surrealdb::error::Api;
+use surrealdb::Error;
 
 use super::model::BasicErrorMessage;
 use derive_more::Display;
@@ -21,7 +21,7 @@ pub enum BackendError {
     Overflow(String),
     PayloadError,
     ParseError,
-    MalformedQuerry(String)
+    MalformedQuerry(String),
 }
 
 impl ResponseError for BackendError {
@@ -64,19 +64,18 @@ impl From<serde_json::Error> for BackendError {
     }
 }
 
-
 pub fn unpack_surrealdb_error(err: Error) -> Option<Api> {
     match err {
         Error::Api(error_type) => Some(error_type),
-        Error::Db(_) => None
+        Error::Db(_) => None,
     }
 }
 
 #[test]
-fn access_surrealdb_error(){
+fn access_surrealdb_error() {
     let response = Error::Api(Api::Query("No Interfaces found".to_string()));
-    let a: Option<Api> = unpack_surrealdb_error(response); 
-    match a.unwrap(){
+    let a: Option<Api> = unpack_surrealdb_error(response);
+    match a.unwrap() {
         Api::Query(_) => (),
         _ => panic!("mismatched types"),
     }

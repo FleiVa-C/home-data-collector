@@ -11,16 +11,16 @@ use actix_web::{
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
 
+use crate::app::general::error::BackendError;
 use crate::app::signal_data::error::QueryError;
 use crate::sdb::SDBRepository;
-use crate::app::general::error::BackendError;
 use hdc_shared::models::{
     ingestion_container::IngestionPacket,
-    signal_data::{IngestionResponse, QueryResponse, QueryTimeseriesData, QueryResult}
+    signal_data::{IngestionResponse, QueryResponse, QueryResult, QueryTimeseriesData},
 };
 
-#[post("v1/ingest")]
-pub async fn ingest(
+#[post("v1/ts/ingest")]
+pub async fn ingest_ts_data(
     sdb_repo: Data<SDBRepository>,
     mut payload: Payload,
     content_length: Header<ContentLength>,

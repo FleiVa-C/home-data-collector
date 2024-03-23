@@ -2,10 +2,10 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct InterfaceQuery {
-    url: Option<String>,
-    uuid: Option<String>,
-    interface_type: Option<String>,
-    name: Option<String>,
+    pub url: Option<String>,
+    pub uuid: Option<String>,
+    pub interface_type: Option<String>,
+    pub name: Option<String>,
 }
 
 impl InterfaceQuery {
@@ -20,27 +20,20 @@ impl InterfaceQuery {
             None => "".to_owned(),
         };
 
-        let uuid = match &self.uuid {
-            Some(uuid) => {
-                if arg_count > 0 {
-                    arg_count += 1;
-                    format!(" AND uuid = '{}'", uuid)
-                } else {
-                    arg_count += 1;
-                    format!("uuid = '{}'", uuid)
-                }
-            }
-            None => "".to_owned(),
-        };
-
         let interface = match &self.interface_type {
             Some(interface) => {
                 if arg_count > 0 {
                     arg_count += 1;
-                    format!(" AND interface_type = '{}'", interface)
+                    format!(
+                        " AND string::lowercase(interface_type) contains '{}'",
+                        interface.to_lowercase()
+                    )
                 } else {
                     arg_count += 1;
-                    format!("interface_type = '{}'", interface)
+                    format!(
+                        "string::lowercase(interface_type) contains '{}'",
+                        interface.to_lowercase()
+                    )
                 }
             }
             None => "".to_owned(),
@@ -50,21 +43,32 @@ impl InterfaceQuery {
             Some(name) => {
                 if arg_count > 0 {
                     arg_count += 1;
-                    format!(" AND name = '{}'", name)
+                    format!(
+                        " AND string::lowercase(name) contains '{}'",
+                        name.to_lowercase()
+                    )
                 } else {
                     arg_count += 1;
-                    format!("name = '{}'", name)
+                    format!("string::lowercase(name) contains '{}'", name.to_lowercase())
                 }
             }
             None => "".to_owned(),
         };
-        if arg_count < 1{
-            format!("SELECT * FROM interface")
-        }else{
-            format!(
-                "SELECT * FROM interface WHERE {}{}{}{}",
-                url, uuid, interface, name
-            )
+        if arg_count < 1 && self.uuid.is_none() {
+            return format!("SELECT * FROM interface");
+        }
+        if self.uuid.is_some() {
+            let uuid = &self.uuid.to_owned().unwrap();
+            if arg_count > 0 {
+                format!(
+                    "SELECT * FROM interface:`{}` WHERE {}{}{}",
+                    uuid, url, interface, name
+                )
+            } else {
+                format!("SELECT * FROM interface:`{}`", uuid)
+            }
+        } else {
+            format!("SELECT * FROM interface WHERE {}{}{}", url, interface, name)
         }
     }
 }

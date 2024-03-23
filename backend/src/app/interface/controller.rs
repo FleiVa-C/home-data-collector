@@ -10,7 +10,10 @@ use log::info;
 use super::model::InterfaceQuery;
 
 impl SDBRepository {
-    pub async fn register_interface(&self, interface: InterfaceModel) -> Result<(), surrealdb::Error> {
+    pub async fn register_interface(
+        &self,
+        interface: InterfaceModel,
+    ) -> Result<(), surrealdb::Error> {
         let mut existing = self
             .db
             .query(format!(

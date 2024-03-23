@@ -1,8 +1,8 @@
-use std::net::{SocketAddr, IpAddr};
+use std::net::{IpAddr, SocketAddr};
 
+use crate::config::ServerConfig;
 use surrealdb::engine::remote::ws::{Client, Ws};
 use surrealdb::{opt::auth::Root, Surreal};
-use crate::config::ServerConfig;
 
 #[derive(Clone)]
 pub struct SDBRepository {
@@ -10,10 +10,13 @@ pub struct SDBRepository {
 }
 
 impl SDBRepository {
-pub async fn init(config: &ServerConfig) -> Self {
-        let mut client: Surreal<Client> = Surreal::new::<Ws>(SocketAddr::new(IpAddr::V4(config.db_address), config.db_port))
-            .await
-            .expect("Can't connect to SurrealBD instance!");
+    pub async fn init(config: &ServerConfig) -> Self {
+        let mut client: Surreal<Client> = Surreal::new::<Ws>(SocketAddr::new(
+            IpAddr::V4(config.db_address),
+            config.db_port,
+        ))
+        .await
+        .expect("Can't connect to SurrealBD instance!");
         client
             .signin(Root {
                 username: &config.db_username,
@@ -21,7 +24,11 @@ pub async fn init(config: &ServerConfig) -> Self {
             })
             .await
             .unwrap();
-        client.use_ns(&config.db_namespace).use_db(&config.db_database).await.unwrap();
+        client
+            .use_ns(&config.db_namespace)
+            .use_db(&config.db_database)
+            .await
+            .unwrap();
         SDBRepository { db: client }
     }
 }
