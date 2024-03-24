@@ -2,9 +2,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct SignalMetaQuery {
-    name: Option<String>,
-    uuid: Option<String>,
-    interface_uuid: Option<String>,
+    pub name: Option<String>,
+    pub uuid: Option<String>,
+    pub interface_uuid: Option<String>,
 }
 
 impl SignalMetaQuery {
@@ -14,7 +14,7 @@ impl SignalMetaQuery {
         let name = match &self.name {
             Some(name) => {
                 arg_count += 1;
-                format!("name = '{}'", name)
+                format!("string::lowercase(name) contains '{}'", name)
             }
             None => "".to_owned(),
         };
@@ -23,10 +23,10 @@ impl SignalMetaQuery {
             Some(interface_uuid) => {
                 if arg_count > 0 {
                     arg_count += 1;
-                    format!("AND interface_uuid contains '{}'", interface_uuid)
+                    format!("AND interface_uuid = '{}'", interface_uuid)
                 } else {
                     arg_count += 1;
-                    format!("interface_uuid contains '{}'", interface_uuid)
+                    format!("interface_uuid = '{}'", interface_uuid)
                 }
             }
             None => "".to_owned(),
