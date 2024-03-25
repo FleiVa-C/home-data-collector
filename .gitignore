@@ -4,3 +4,5 @@ target
 **/[Cc]onfig.toml
 /dev/*
 */test/*
+*/node_modules
+*/.svelte-kit
