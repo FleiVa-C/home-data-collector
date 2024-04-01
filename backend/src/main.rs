@@ -1,6 +1,6 @@
 #![allow(unused)]
 use actix_web::{middleware::Logger, web::Data, App, HttpServer};
-use log::{info, warn};
+use log::{info, warn, debug};
 use std::net::{IpAddr, SocketAddr};
 use surrealdb::engine::remote::ws::{Client, Ws};
 use surrealdb::opt::auth::Root;
@@ -21,10 +21,10 @@ use sdb::SDBRepository;
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     let config: ServerConfig = ServerConfig::load();
-    println!("{:?}", config);
 
     std::env::set_var("RUST_LOG", &config.loglevel);
     env_logger::init();
+    debug!("{:?}", config);
 
     let sdb_repo: SDBRepository = SDBRepository::init(&config).await;
 
