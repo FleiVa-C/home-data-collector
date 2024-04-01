@@ -8,7 +8,7 @@ use actix_web::{
 };
 use derive_more::Display;
 use futures::StreamExt;
-use log::info;
+use log::{info, error};
 use serde::{Deserialize, Serialize};
 use surrealdb::error::Api;
 
@@ -33,9 +33,7 @@ pub async fn register_user(
         }
         body.extend_from_slice(&chunk);
     }
-    println!("{:?}", body);
     let mut user = serde_json::from_slice::<User>(&body)?;
-    println!("{:?}", user);
     user.add_uuid();
 
     let response = sdb_repo.register_user(user).await;
@@ -53,7 +51,7 @@ pub async fn register_user(
         }
     }
 }
-#[post("v1/user")]
+#[get("v1/user")]
 pub async fn query_user(
     sdb_repo: Data<SDBRepository>,
     query: Query<UserQuery>,
@@ -63,7 +61,7 @@ pub async fn query_user(
     match response {
         Ok(response) => Ok(Json(response)),
         Err(e) => {
-            info!("{}", e);
+            error!("{}", e);
             let error = unpack_surrealdb_error(e).unwrap();
             match error {
                 Api::Query(msg) => Err(BackendError::MalformedQuerry(msg)),
