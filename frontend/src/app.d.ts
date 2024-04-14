@@ -7,3 +7,6 @@ declare namespace App {
 	// interface Error {}
 	// interface Platform {}
 }
+
+declare module 'd3-scale';
+declare module 'chart.js';
