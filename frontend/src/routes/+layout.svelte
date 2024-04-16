@@ -20,6 +20,7 @@
 	// Floating UI for Popups
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
 	import { storePopup, popup } from '@skeletonlabs/skeleton';
+    import type { PageData } from './$types';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
 
@@ -28,6 +29,8 @@
         target: 'popupClick',
         placement: 'bottom'
     };
+
+    export let data: PageData;
 </script>
 
 <!-- App Shell -->
@@ -59,6 +62,12 @@
 				</a>
             </svelte:fragment>
             <svelte:fragment slot="trail">
+                {#if !data.user}
+                <a class="btn btn-sm variant-ghost-surface" href="/login">Login</a>
+                <a class="btn btn-sm variant-ghost-surface" href="/signup">signup</a>
+                {:else}
+                <a class="btn btn-sm variant-ghost-surface" href="/logou">Logout</a>
+                {/if}
                 <button use:popup={popupCLick}>
                     <Avatar src="invalid-image.jpg" initials="FR" width="w-10" class="mr-0 p-0"/>
                 </button>
@@ -72,7 +81,7 @@
 
 <div class="card p-4 -my-1 variant-filled-background" data-popup="popupClick">
 <div class="grid grid-cols-1 gap-2">
-	<a href="/dashboard">Profile</a>
+	<a href="/profile">Profile</a>
 	<a href="/">Settings</a>
 	<a href="/">Admin</a>
 </div>
