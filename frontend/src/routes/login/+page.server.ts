@@ -44,15 +44,18 @@ export const actions: Actions = {
                 username: username.toLowerCase()
             }
         }).key();
-        console.log(pw);
-
-        console.log(existingUser);
-        const validPassword = await new Argon2id().verify(pw[0].hashedPassword, password);
-		if (!validPassword) {
-			return fail(400, {
-				message: "Incorrect username or password"
-			});
-		}
+        if (pw && pw.length == 1) {
+            const validPassword = await new Argon2id().verify(pw[0].hashedPassword, password);
+            if (!validPassword) {
+                return fail(400, {
+                    message: "Incorrect username or password"
+                });
+            }
+        } else {
+            return fail(400, {
+                message: "Incorrect username or password"
+            });
+        }
 
         const session = await auth.createSession(existingUser.id, {});
         const sessionCookie = auth.createSessionCookie(session.id);
@@ -60,7 +63,6 @@ export const actions: Actions = {
             path: ".",
             ...sessionCookie.attributes
         });
-
         redirect(302, "/");
     }
 };

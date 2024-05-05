@@ -43,14 +43,12 @@
   "type": "module",
   "dependencies": {
     "@floating-ui/dom": "1.6.3",
+    "@lucia-auth/adapter-prisma": "^4.0.1",
+    "@prisma/client": "^5.12.1",
     "@types/chart.js": "^2.9.41",
     "@types/d3": "^7.4.3",
     "chart.js": "^4.4.2",
     "d3": "^7.9.0",
-    "@floating-ui/dom": "^1.6.3",
-    "@lucia-auth/adapter-prisma": "^4.0.1",
-    "@prisma/client": "^5.12.1",
-    "highlight.js": "11.9.0",
-    "lucia-auth": "^1.8.0"
+    "highlight.js": "11.9.0"
   }
 }

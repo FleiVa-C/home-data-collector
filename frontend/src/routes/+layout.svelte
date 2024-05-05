@@ -62,12 +62,14 @@
 				</a>
             </svelte:fragment>
             <svelte:fragment slot="trail">
-                {#if !data.user}
-                <a class="btn btn-sm variant-ghost-surface" href="/login">Login</a>
-                <a class="btn btn-sm variant-ghost-surface" href="/signup">signup</a>
-                {:else}
-                <a class="btn btn-sm variant-ghost-surface" href="/logou">Logout</a>
-                {/if}
+                    <form method="POST">
+                        {#if !data.user}
+                            <a class="btn btn-sm variant-ghost-surface" href="/login">Login</a>
+                            <a class="btn btn-sm variant-ghost-surface" href="/signup">signup</a>
+                        {:else}
+                            <button formaction="/logout" class="btn btn-sm variant-ghost-surface" type="submit">Logout</button>
+                        {/if}
+                    </form>
                 <button use:popup={popupCLick}>
                     <Avatar src="invalid-image.jpg" initials="FR" width="w-10" class="mr-0 p-0"/>
                 </button>
