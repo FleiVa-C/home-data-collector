@@ -1,33 +1,41 @@
+<script lang="ts">
+    import { enhance } from "$app/forms";
+</script>
 <div class="sm mx-auto w-96 mt-24">
 <div class="card p-4">
     <strong>Create Account</strong>
-        <form method="POST">
+        <form method="post" use:enhance>
             <div class="form-element">
-                <label>First Name
-                <input type="text" class="input variant-form-material !rounded-none"/>
+                <label for="firstname">First Name
+                <input type="text" name="firstname" id="firstname" class="input variant-form-material !rounded-none"/>
                 </label>
             </div>
             <div class="form-element">
-                <label>Last Name
-                <input type="text" class="input variant-form-material !rounded-none"/>
+                <label for="lastname">Last Name
+                <input type="text" name="lastname" id="lastname" class="input variant-form-material !rounded-none"/>
                 </label>
             </div>
             <div class="form-element">
-                <label>Email
-                <input type="email" class="input variant-form-material !rounded-none"/>
+                <label for="username">Username
+                <input type="text" name="username" id="username" class="input variant-form-material !rounded-none"/>
                 </label>
             </div>
             <div class="form-element">
-                <label>Password
-                <input type="password" class="input variant-form-material !rounded-none"/>
+                <label for="email">Email
+                <input type="email" name="email" id="email" class="input variant-form-material !rounded-none"/>
                 </label>
             </div>
             <div class="form-element">
-                <label>Repeat Password
-                <input type="password" class="input variant-form-material !rounded-none"/>
+                <label for="password">Password
+                <input type="password" name="password" id="password" class="input variant-form-material !rounded-none"/>
                 </label>
             </div>
-            <button class="variant-ghost-success mt-4 py-0.5 px-4 w-full" type="submit">create account</button>
+            <div class="form-element">
+                <label for="confirmpassword">Confirm Password
+                <input type="password" name="confirmpassword" id="confirmpassword" class="input variant-form-material !rounded-none"/>
+                </label>
+            </div>
+            <button class="variant-ghost-success mt-4 py-0.5 px-4 w-full" >create account</button>
         </form>
     <div class="mt-4">
         <a class="anchor" href="/login">Back to Login</a>

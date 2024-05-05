@@ -22,6 +22,7 @@ serde_json = "1.0.107"
 chrono = "0.4.31"
 hdc_shared = { path = "../shared"}
 toml = "0.8.8"
+actix-cors = "0.7.0"
 
 [dev-dependencies]
 anyhow = "1"

@@ -6,3 +6,4 @@ target
 */test/*
 */node_modules
 */.svelte-kit
+*.sqlite

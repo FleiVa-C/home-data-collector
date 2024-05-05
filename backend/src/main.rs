@@ -1,5 +1,6 @@
 #![allow(unused)]
 use actix_web::{middleware::Logger, web::Data, App, HttpServer};
+use actix_cors::Cors;
 use log::{info, warn, debug};
 use std::net::{IpAddr, SocketAddr};
 use surrealdb::engine::remote::ws::{Client, Ws};
@@ -31,8 +32,11 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         let logger = Logger::default();
         let sdb_data = Data::new(sdb_repo.clone());
+        let cors = Cors::default()
+            .allow_any_origin();
         App::new()
             .wrap(logger)
+            .wrap(cors)
             .app_data(sdb_data)
             .service(ingest_ts_data)
             .service(query_timeseries)
