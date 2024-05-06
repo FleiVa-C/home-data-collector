@@ -4,13 +4,12 @@
     import InterfaceDetail from './interfacedetail.svelte'; 
 
     export let data: PageData;
-    
-    let selected: InterfaceData = data.item[0];
+
+    let selected: InterfaceData = data.data[0];
 
     function setSelected(sensor: InterfaceData) {
         selected = sensor
-    }
-
+    };
 </script>
 
 <div class="flex flex-row h-full">
@@ -18,7 +17,7 @@
         <input class="input" type="search" placeholder="Search"/>
         <nav class="list-nav">
             <ul >
-                {#each data.item as sensor}
+                {#each data.data as sensor}
                     <li>
                         <button class="w-full" on:click={() => setSelected(sensor)}>
                         <span class="flex-left">{sensor.name}</span>

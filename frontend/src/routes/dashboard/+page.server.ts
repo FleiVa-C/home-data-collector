@@ -1,6 +1,11 @@
-import type { PageLoad } from "./$types";
+import { redirect } from "@sveltejs/kit";
+import { handleLoginRedirect } from "$lib/utils";
+import type { PageServerLoad } from "./$types";
 
-export const load: PageLoad = async () => {
+export const load: PageServerLoad = async ( event ) => {
+    if (!event.locals.user){
+        throw redirect(302, handleLoginRedirect(event, "You need to be signed in to view the Dashboards."))
+    };
     const data = [{ x: 1979, y: 7.19 },
 	{ x: 1980, y: 7.83 },
 	{ x: 1981, y: 7.24 },

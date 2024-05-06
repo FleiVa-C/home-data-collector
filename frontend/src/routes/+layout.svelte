@@ -39,23 +39,25 @@
 		<!-- App Bar -->
 		<AppBar padding="p-1">
 			<svelte:fragment slot="lead">
-				<strong class="text-xl uppercase">HDC</strong>
+				<strong class="text-xl uppercase">
+                    <a href="/">HDC</a>
+                </strong>
 			</svelte:fragment>
 			<svelte:fragment slot="default">
 				<a
-					class="btn btn-sm variant-ghost-surface"
+					class="btn btn-md hover:variant-soft-surface"
 					href="/dashboard"
 				>
 					Dashboard
 				</a>
 				<a
-					class="btn btn-sm variant-ghost-surface"
+					class="btn btn-md hover:variant-soft-surface"
 					href="/interface"
 				>
 					Interface
 				</a>
 				<a
-					class="btn btn-sm variant-ghost-surface"
+					class="btn btn-md hover:variant-soft-surface"
 					href="/smte"
 				>
 					Something Else
@@ -64,14 +66,14 @@
             <svelte:fragment slot="trail">
                     <form method="POST">
                         {#if !data.user}
-                            <a class="btn btn-sm variant-ghost-surface" href="/login">Login</a>
-                            <a class="btn btn-sm variant-ghost-surface" href="/signup">signup</a>
+                            <a class="btn btn-md hover:variant-soft-surface" href="/login">Login</a>
+                            <a class="btn btn-md hover:variant-soft-surface" href="/signup">signup</a>
                         {:else}
-                            <button formaction="/logout" class="btn btn-sm variant-ghost-surface" type="submit">Logout</button>
+                            <button formaction="/logout" class="btn btn-md hover:variant-soft-surface" type="submit">Logout</button>
                         {/if}
                     </form>
                 <button use:popup={popupCLick}>
-                    <Avatar src="invalid-image.jpg" initials="FR" width="w-10" class="mr-0 p-0"/>
+                    <Avatar src="dummy_image.png" initials="FR" width="w-10" class="mr-0 p-0"/>
                 </button>
             </svelte:fragment>
 		</AppBar>

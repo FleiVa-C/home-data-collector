@@ -1,11 +1,22 @@
 <script lang="ts">
     import { enhance } from "$app/forms";
+    import { page } from "$app/stores";
+    import { fade } from 'svelte/transition';
+
+    let message: string
+
+    $: message = $page.url.searchParams.get("message") ?? ""
 </script>
 <head>
     <title>Sign In</title>
 </head>
 
 <div class="sm mx-auto w-96 mt-24">
+    {#if message}
+        <div transition:fade class="alert-message variant-filled-warning mb-4">
+        <p class="pl-1">{message}</p>
+    </div>
+    {/if}
     <div class="card p-4">
         <strong>Login</strong>
             <form method="post" use:enhance>
