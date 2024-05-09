@@ -1,0 +1,28 @@
+services:
+
+  surrealdb:
+    image: surrealdb/surrealdb:latest
+    container_name: surrealdb
+    user: root
+    restart: always
+    ports:
+      - "80:8000"
+    volumes:
+      - "./surreal:/surreal surrealdb/surrealdb:latest"
+    command:
+      - start
+      - --log=trace 
+      - --auth 
+      - --user=root
+      - --pass=root
+      - file:surreald/surreal.db
+
+  mysqldb:
+    image: mysql
+    restart: always
+    volumes:
+      - "./mysql:/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "81:3306"

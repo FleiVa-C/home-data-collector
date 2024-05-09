@@ -2,8 +2,8 @@
 target
 */visual
 **/[Cc]onfig.toml
-/dev/*
 */test/*
 */node_modules
 */.svelte-kit
-*.sqlite
+.dev/mysql
+.dev/surreal

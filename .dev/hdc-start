@@ -1,0 +1,41 @@
+#!/bin/env bash
+SCRIPT_DIR=$(cd -- $( dirname -- ${BASH_SOURCE[0]} ) &> /dev/null && pwd)
+status=$(systemctl status docker | grep active)
+inactive="inactive"
+echo "$SCRIPT_DIR"
+
+if [[ "$status" == *"$inactive"* ]]; then
+    echo "Starting Docker..."
+    sudo systemctl start docker
+    echo "Docker is now running!"
+    else
+        echo "Docker already running!"
+fi
+
+start_db ()
+{
+    echo "Starting Databases now."
+    cd $SCRIPT_DIR
+    docker compose up -d
+}
+
+while getopts 'fbh:' flag; do
+    case "$flag" in
+        f)
+            start_db            
+            echo "Starting backend service in dev mode."
+            cd ../backend
+            cargo run 
+            ;;
+        b)
+            start_db
+            ;;
+        h)
+            echo "--f = frontend (db's + backend service in dev mode)"
+            echo "--b = backend (only start db's in dev mode)"
+            ;;
+    esac
+done
+
+
+
