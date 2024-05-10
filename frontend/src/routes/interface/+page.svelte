@@ -5,7 +5,7 @@
 
     export let data: PageData;
 
-    let selected: InterfaceData = data.data[0];
+    let selected: InterfaceData = data.interfaces[0];
 
     function setSelected(sensor: InterfaceData) {
         selected = sensor
@@ -13,11 +13,11 @@
 </script>
 
 <div class="flex flex-row h-full">
-    <div class="card variant-filled-surface center w-1/4 p-5">
+    <div class="variant-filled-surface center w-1/4 p-5">
         <input class="input" type="search" placeholder="Search"/>
         <nav class="list-nav">
             <ul >
-                {#each data.data as sensor}
+                {#each data.interfaces as sensor}
                     <li>
                         <button class="w-full" on:click={() => setSelected(sensor)}>
                         <span class="flex-left">{sensor.name}</span>
@@ -29,7 +29,7 @@
         </nav>
 
     </div>
-    <div class="card variant-filled-surface w-full">
+    <div class="variant-filled-surface w-full">
         <InterfaceDetail interfaceInfo={selected} />
     </div>
 </div>

@@ -11,8 +11,7 @@ export const load: PageServerLoad = async (event) => {
     const item = await res.json() as InterfaceData[];
 
     return { 
-        data: item,
-        user: event.locals.user
+        interfaces: item
     };
 
 }

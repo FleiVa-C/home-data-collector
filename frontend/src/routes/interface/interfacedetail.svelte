@@ -13,7 +13,7 @@
 </script>
 
 
-<div class="card h-16 flex">
+<div class="h-16 flex">
 {#if editMode}
     <div class="pl-5 w-full flex items-center variant-soft-secondary">
         <input class="input" bind:value={interfaceInfo.name}/>
