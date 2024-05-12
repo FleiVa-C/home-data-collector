@@ -26,16 +26,6 @@ impl SDBRepository {
             0 => (),
             _ => return Err(Error::Api(Api::Query("Already exists.".to_string()))),
         }
-
-        let signals: Vec<SignalMeta> = interface.get_signals();
-        for signal in signals {
-            let _: Option<SignalMeta> = self
-                .db
-                .create(("signal", signal.uuid.clone().unwrap()))
-                .content(signal)
-                .await?;
-        }
-
         let created: Option<InterfaceModel> = self
             .db
             .create(("interface", interface.get_uuid().clone().unwrap()))

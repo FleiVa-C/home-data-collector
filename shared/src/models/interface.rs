@@ -47,7 +47,7 @@ impl InterfaceModel {
 }
 
 pub trait IsAdapter{
-    fn add_uuid(&mut self, interface_uuid: &String);
+    fn add_uuid(&mut self);
     fn get_signals(&self)-> Vec<SignalMeta>;
 }
 
@@ -62,7 +62,7 @@ pub struct Interface<T> where T: IsAdapter{
 impl <T:IsAdapter> Interface<T> {
     pub fn add_uuid(&mut self) {
         self.uuid = Some(Uuid::new_v4().to_string());
-        self.signals.add_uuid(&self.uuid.clone().unwrap())
+        self.signals.add_uuid()
     }
     pub fn get_global_id(&self) -> &Option<String> {
         &self.uuid

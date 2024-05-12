@@ -13,11 +13,11 @@ pub struct ShellyV2Adapter {
 }
 
 impl IsAdapter for ShellyV2Adapter {
-    fn add_uuid(&mut self, interface_uuid: &String) {
-        self.temp_100.add_uuid(interface_uuid);
-        self.temp_101.add_uuid(interface_uuid);
-        self.temp_102.add_uuid(interface_uuid);
-        self.temp_103.add_uuid(interface_uuid);
+    fn add_uuid(&mut self) {
+        self.temp_100.add_uuid();
+        self.temp_101.add_uuid();
+        self.temp_102.add_uuid();
+        self.temp_103.add_uuid();
     }
     fn get_signals(&self) -> Vec<SignalMeta> {
         let mut signal: Vec<SignalMeta> = Vec::new();

@@ -13,7 +13,6 @@ mod sdb;
 
 use app::interface::route::*;
 use app::signal_data::route::*;
-use app::signal_meta::route::*;
 use app::user::route::*;
 use config::ServerConfig;
 use hdc_shared::utils::config::load_config;
@@ -45,7 +44,6 @@ async fn main() -> std::io::Result<()> {
             .service(query_interface)
             .service(register_user)
             .service(query_user)
-            .service(query_signal_meta)
     })
     .bind((SocketAddr::new(IpAddr::V4(config.listen_address), config.listen_port)))?
     .run()

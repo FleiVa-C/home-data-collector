@@ -19,19 +19,19 @@ pub struct WeatherAdapter {
 }
 
 impl IsAdapter for WeatherAdapter {
-    fn add_uuid(&mut self, interface_uuid: &String) {
-        self.temp.add_uuid(interface_uuid);
-        self.dewpoint.add_uuid(interface_uuid);
-        self.windchill.add_uuid(interface_uuid);
-        self.windspeed.add_uuid(interface_uuid);
-        self.windgust.add_uuid(interface_uuid);
-        self.pressure.add_uuid(interface_uuid);
-        self.preciprate.add_uuid(interface_uuid);
-        self.preciptotal.add_uuid(interface_uuid);
-        self.solar_radiation.add_uuid(interface_uuid);
-        self.uv.add_uuid(interface_uuid);
-        self.wind_dir.add_uuid(interface_uuid);
-        self.humidity.add_uuid(interface_uuid);
+    fn add_uuid(&mut self) {
+        self.temp.add_uuid();
+        self.dewpoint.add_uuid();
+        self.windchill.add_uuid();
+        self.windspeed.add_uuid();
+        self.windgust.add_uuid();
+        self.pressure.add_uuid();
+        self.preciprate.add_uuid();
+        self.preciptotal.add_uuid();
+        self.solar_radiation.add_uuid();
+        self.uv.add_uuid();
+        self.wind_dir.add_uuid();
+        self.humidity.add_uuid();
     }
     fn get_signals(&self) -> Vec<SignalMeta> {
         let mut signal: Vec<SignalMeta> = Vec::new();
