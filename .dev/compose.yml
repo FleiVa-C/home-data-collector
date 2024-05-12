@@ -8,14 +8,12 @@ services:
     ports:
       - "80:8000"
     volumes:
-      - "./surreal:/surreal surrealdb/surrealdb:latest"
+      - "./surreal:/surreal_db"
     command:
       - start
-      - --log=trace 
+      - --log=info 
       - --auth 
-      - --user=root
-      - --pass=root
-      - file:surreald/surreal.db
+      - file:/surreal_db/surreal.db
 
   mysqldb:
     image: mysql
