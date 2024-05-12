@@ -40,6 +40,7 @@ async fn main() -> std::io::Result<()> {
             .service(ingest_ts_data)
             .service(query_timeseries)
             .service(register_interface)
+            .service(update_interface)
             .service(get_tasks)
             .service(query_interface)
             .service(register_user)

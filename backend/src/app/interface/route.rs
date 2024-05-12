@@ -6,6 +6,7 @@ use actix_web::{
         StatusCode,
     },
     post,
+    put,
     web::{self, Data, Header, Json, Path, Query},
     HttpResponse,
 };
@@ -83,6 +84,41 @@ pub async fn query_interface(
             let error = unpack_surrealdb_error(e).unwrap();
             match error {
                 Api::Query(msg) => Err(BackendError::MalformedQuerry(msg)),
+                _ => Err(BackendError::SomethingWentWrong(
+                    "Something went wrong.".to_string(),
+                )),
+            }
+        }
+    }
+}
+
+#[put("v1/interface/update/{uuid}")]
+pub async fn update_interface(
+    sdb_repo: Data<SDBRepository>,
+    mut payload: web::Payload,
+    content_length: Header<ContentLength>,
+    interface_uuid: Path<String>
+) -> Result<Json<String>, BackendError> {
+    let mut body = web::BytesMut::new();
+    let body_length: usize = *content_length.into_inner();
+    while let Some(chunk) = payload.next().await {
+        let chunk = chunk?;
+
+        if (body.len() + chunk.len()) > body_length {
+            return Err(BackendError::Overflow("Overflow Error".to_string()));
+        }
+        body.extend_from_slice(&chunk);
+    }
+    let mut interface = serde_json::from_slice::<InterfaceModel>(&body)?;
+
+    let response = sdb_repo.update_interface(interface, interface_uuid.into_inner()).await;
+    match response {
+        Ok(()) => Ok(Json("Success".to_string())),
+        Err(e) => {
+            info!("{}", e);
+            let error = unpack_surrealdb_error(e).unwrap();
+            match error {
+                Api::Query(msg) => Err(BackendError::AlreadyExists(msg)),
                 _ => Err(BackendError::SomethingWentWrong(
                     "Something went wrong.".to_string(),
                 )),

@@ -2,7 +2,7 @@ use super::signal_meta::*;
 use crate::models::interface::IsAdapter;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct WeatherAdapter {
     pub temp: SignalMeta,
     pub dewpoint: SignalMeta,

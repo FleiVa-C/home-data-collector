@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use surrealdb::sql::statements::OptionStatement;
 use surrealdb::{error::Api, sql::Value, Error};
 
 use crate::app::general::error::BackendError;
@@ -55,5 +56,33 @@ impl SDBRepository {
 
         let result: Vec<InterfaceModel> = response.take(0)?;
         Ok(result)
+    }
+
+    pub async fn update_interface(
+        &self,
+        interface: InterfaceModel,
+        uuid: String
+    ) -> Result<(), surrealdb::Error> {
+        let interface_uuid = interface.get_uuid().unwrap();
+        let existing: Option<InterfaceModel> = self
+            .db
+            .select(("interface", uuid))
+            .await?;
+        if let Some(test) = existing { 
+            if interface.check_update(&test) { 
+            let updated: Option<InterfaceModel> = self
+                .db
+                .update(("interface", interface.get_uuid().clone().unwrap()))
+                .content(&interface)
+                .await?;
+            match updated {
+                Some(_) => return Ok(()),
+                None => return Ok(()),
+                }
+            } else {
+                return Ok(())
+        }} else {
+            return Ok(())
+        };
     }
 }

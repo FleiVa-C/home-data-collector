@@ -5,8 +5,9 @@ use super::weather_adapter::WeatherAdapter;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use uuid::Uuid;
+use std::mem::discriminant;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(tag = "interface_type")]
 pub enum InterfaceModel {
     ShellyV1(Interface<ShellyV1Adapter>),
@@ -43,6 +44,36 @@ impl InterfaceModel {
             Self::WeatherAPI(value) => value.uuid.clone(),
         }
     }
+    pub fn check_update(&self, new_value: &Self) -> bool {
+        if discriminant(self) == discriminant(new_value){
+            let existing_signals = match self {
+                Self::ShellyV1(value) => value.signals.get_signals(),
+                Self::ShellyV2(value) => value.signals.get_signals(),
+                Self::WeatherAPI(value) => value.signals.get_signals(),
+            };
+            let update_signals = match new_value {
+                Self::ShellyV1(value) => value.signals.get_signals(),
+                Self::ShellyV2(value) => value.signals.get_signals(),
+                Self::WeatherAPI(value) => value.signals.get_signals(),
+            };
+            let success:Option<()> = existing_signals.iter().zip(update_signals.iter())
+                .try_for_each(|(existing, update)| {
+                    let existing_uuid = existing.get_uuid();
+                    let update_uuid = update.get_uuid();
+                    if existing_uuid == update_uuid{
+                        Some(())
+                    } else {
+                        None
+                    }});
+            match success {
+                Some(()) => return true,
+                None => return false,
+            };
+        } else {
+            return false
+        }
+    }
+
         
 }
 
@@ -51,7 +82,7 @@ pub trait IsAdapter{
     fn get_signals(&self)-> Vec<SignalMeta>;
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct Interface<T> where T: IsAdapter{
     pub uuid: Option<String>,
     pub name: String,
