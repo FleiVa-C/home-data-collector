@@ -8,7 +8,7 @@ pub struct BasicErrorMessage {
 }
 
 impl BasicErrorMessage {
-    pub fn init(code: http::StatusCode, msg: String) -> Self {
+    pub fn new(code: http::StatusCode, msg: String) -> Self {
         BasicErrorMessage {
             status: code.as_u16(),
             message: msg,

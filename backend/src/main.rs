@@ -10,6 +10,7 @@ use surrealdb::sql::Thing;
 mod app;
 mod config;
 mod sdb;
+mod error;
 
 use app::interface::route::*;
 use app::signal_data::route::*;
@@ -17,6 +18,9 @@ use app::user::route::*;
 use config::ServerConfig;
 use hdc_shared::utils::config::load_config;
 use sdb::SDBRepository;
+
+
+pub use self::error::{Error, Result};
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {

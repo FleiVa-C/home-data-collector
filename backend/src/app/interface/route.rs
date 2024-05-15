@@ -1,4 +1,5 @@
 use super::model::InterfaceQuery;
+use super::error::Error;
 use actix_web::{
     get,
     http::{
@@ -14,7 +15,7 @@ use futures::StreamExt;
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::io;
-use surrealdb::{error::Api, Error};
+use surrealdb::error::Api;
 
 use crate::app::general::error::{unpack_surrealdb_error, BackendError};
 use crate::sdb::SDBRepository;
@@ -28,32 +29,27 @@ pub async fn register_interface(
     sdb_repo: Data<SDBRepository>,
     mut payload: web::Payload,
     content_length: Header<ContentLength>,
-) -> Result<Json<String>, BackendError> {
+) -> Result<Json<String>, Error> {
+    let instance: &str = "v1/interface/register";
     let mut body = web::BytesMut::new();
     let body_length: usize = *content_length.into_inner();
     while let Some(chunk) = payload.next().await {
-        let chunk = chunk?;
+        let chunk = chunk.map_err(|e| Error::Payload { error: e, instance: instance.to_owned()})?;
 
         if (body.len() + chunk.len()) > body_length {
-            return Err(BackendError::Overflow("Overflow Error".to_string()));
+            return Err(Error::BodyOverflow(instance.to_owned()));
         }
         body.extend_from_slice(&chunk);
     }
-    let mut interface = serde_json::from_slice::<InterfaceModel>(&body)?;
+    let mut interface = serde_json::from_slice::<InterfaceModel>(&body).map_err(|error| Error::Json { error, instance: instance.to_owned()})?;
     interface.add_uuid();
 
-    let response = sdb_repo.register_interface(interface).await;
+    let response = sdb_repo.register_interface(interface, instance).await;
     match response {
         Ok(()) => Ok(Json("Success".to_string())),
         Err(e) => {
             info!("{}", e);
-            let error = unpack_surrealdb_error(e).unwrap();
-            match error {
-                Api::Query(msg) => Err(BackendError::AlreadyExists(msg)),
-                _ => Err(BackendError::SomethingWentWrong(
-                    "Something went wrong.".to_string(),
-                )),
-            }
+            Err(e)
         }
     }
 }

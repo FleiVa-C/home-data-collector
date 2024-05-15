@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use surrealdb::sql::statements::OptionStatement;
-use surrealdb::{error::Api, sql::Value, Error};
+use surrealdb::{error::Api, sql::Value};
+use super::error::Error;
 
 use crate::app::general::error::BackendError;
 use crate::sdb::SDBRepository;
@@ -14,24 +15,25 @@ impl SDBRepository {
     pub async fn register_interface(
         &self,
         interface: InterfaceModel,
-    ) -> Result<(), surrealdb::Error> {
+        instance: &str
+    ) -> Result<(), Error> {
         let mut existing = self
             .db
             .query(format!(
                 "SELECT * FROM interface WHERE url = '{}'",
                 interface.get_url()
             ))
-            .await?;
-        let result: Vec<InterfaceModel> = existing.take(0)?;
+            .await.map_err(|e| Error::Db { error: e, instance: instance.to_owned()})?;
+        let result: Vec<InterfaceModel> = existing.take(0).map_err(|e| Error::Db { error: e, instance: instance.to_owned()})?;
         match result.len() {
             0 => (),
-            _ => return Err(Error::Api(Api::Query("Already exists.".to_string()))),
+            _ => return Err(Error::InterfaceAlreadyExists(instance.to_owned())),
         }
         let created: Option<InterfaceModel> = self
             .db
             .create(("interface", interface.get_uuid().clone().unwrap()))
             .content(&interface)
-            .await?;
+            .await.map_err(|e| Error::Db { error: e, instance: instance.to_owned()})?;
         match created {
             Some(_) => Ok(()),
             None => Ok(()),

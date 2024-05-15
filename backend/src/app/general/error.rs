@@ -29,7 +29,7 @@ impl ResponseError for BackendError {
         HttpResponse::build(self.status_code())
             .insert_header(ContentType::json())
             .body(
-                serde_json::to_string(&BasicErrorMessage::init(
+                serde_json::to_string(&BasicErrorMessage::new(
                     self.status_code(),
                     self.to_string(),
                 ))
