@@ -296,12 +296,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ea50b14b7a4b9343f8c627a7a53c52076482bd4bdad0a24fd3ec533ed616cc2c"
 
 [[package]]
-name = "anyhow"
-version = "1.0.80"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ad32ce52e4161730f7098c077cd2ed6229b5804ccf99e5366be1ab72a98b4e1"
-
-[[package]]
 name = "approx"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1498,7 +1492,6 @@ version = "0.1.0"
 dependencies = [
  "actix-cors",
  "actix-web",
- "anyhow",
  "chrono",
  "derive_more",
  "env_logger",
@@ -1510,7 +1503,6 @@ dependencies = [
  "strum",
  "strum_macros",
  "surrealdb",
- "thiserror",
  "tokio",
  "toml",
  "uuid",

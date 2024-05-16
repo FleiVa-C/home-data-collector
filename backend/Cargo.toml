@@ -6,7 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-thiserror = "1"
 tokio = { version = "1", features = ["full"]}
 actix-web = "4.4"
 uuid = { version = "1.6.1", features = ["v4"]}
@@ -23,7 +22,3 @@ chrono = "0.4.31"
 hdc_shared = { path = "../shared"}
 toml = "0.8.8"
 actix-cors = "0.7.0"
-
-[dev-dependencies]
-anyhow = "1"
-
