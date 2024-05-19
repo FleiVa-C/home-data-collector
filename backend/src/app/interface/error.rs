@@ -13,14 +13,16 @@ pub type Result<T> = core::result::Result<T, Error>;
 
 #[derive(Debug, From)]
 pub enum Error {
-    BodyOverflow(String),
-    UnknownLength,
-    CannotParse,
-    MalformedQuery,
-    InterfaceAlreadyExists(String),
-    UpdateUuidNotAllowed,
-    UpdateInterfacetypeNotAllowed,
-    SomethingWrong,
+    BodyOverflow{instance: String},
+    UnknownLength{instance: String},
+    CannotParse{instance: String},
+    //MalformedQuery{instance: String} --> do when implementing logic to check invalid args,
+    InterfaceAlreadyExists{instance: String},
+    UpdateUuidNotAllowed{instance: String},
+    UpdateInterfacetypeNotAllowed{instance: String},
+    UpdateInterfaceNotExists{instance: String},
+    UpdateFailed{instance: String},
+    SomethingWrong{instance: String},
 
     #[from]
     Db{error: surrealdb::Error, instance: String},
@@ -63,20 +65,32 @@ impl ProblemDetails{
     fn build(value: &Error) -> Self {
         let status_code: u16 = error_status(&value);
         match value {
+            Error::BodyOverflow{instance} => ProblemDetails::new(None, status_code, "Unable to Parse body".to_owned(), "Body longer than content-length header".to_string(), instance.to_string()),
+            Error::UnknownLength{instance} => ProblemDetails::new(None, status_code, "Unable to Parse body".to_owned(), "Length of body is not known".to_owned(), instance.to_string()),
+            Error::CannotParse{instance} => ProblemDetails::new(None, status_code, "Unable to Parse body".to_owned(), "An error occured during the parsing of the body.".to_string(), instance.to_string()),
+            Error::InterfaceAlreadyExists{instance} => ProblemDetails::new(None, status_code, "Database Error".to_owned(), "Interface Already exists".to_owned(), instance.to_owned()),
+            Error::UpdateUuidNotAllowed{instance} => ProblemDetails::new(None, status_code, "UUID update not allowed".to_owned(), "Updating UUID's of any interface or signal is not allowed".to_owned(), instance.to_owned()),
+            Error::UpdateInterfacetypeNotAllowed{instance} => ProblemDetails::new(None, status_code, "update interface type not allowed".to_owned(), "You tried to modify the interface_type which is not allowed".to_owned(), instance.to_owned()),
+            Error::UpdateInterfaceNotExists{instance} => ProblemDetails::new(None, status_code, "Interface does not exist.".to_owned(), "The interface you tried to update does not exists.".to_owned(), instance.to_owned()),
+            Error::UpdateFailed{instance} => ProblemDetails::new(None, status_code, "Updating the interface failed.".to_owned(), "An error occured during updating the interface in the database.".to_owned(), instance.to_owned()),
+            Error::SomethingWrong { instance } => ProblemDetails::new(None, status_code, "Something went wrong".to_owned(), "An unknown error occured".to_string(), instance.to_owned()),
             Error::Json { error, instance } => ProblemDetails::new(None, status_code, "Unable to Parse body".to_owned(), error.to_string(), instance.to_string()),
             Error::Payload { error, instance } => ProblemDetails::new(None, status_code, "Payload Error".to_owned(), error.to_string(), instance.to_string()),
             Error::Db { error, instance } => ProblemDetails::new(None, status_code, "Database Error".to_owned(), error.to_string(), instance.to_string()),
-            Error::InterfaceAlreadyExists(instance) => ProblemDetails::new(None, status_code, "Database Error".to_owned(), "Interface Already exists".to_owned(), instance.to_owned()),
-            _ => ProblemDetails::new(None, status_code, "Some Other Error".to_owned(), "Some Message".to_string(), "Some Instance".to_string()),
+            _ => ProblemDetails::new(None, status_code, "Something went wrong".to_owned(), "An unknown error occured".to_string(), "unknown".to_string()),
         }
     }
 }
 
 fn error_status(error: &Error) -> u16 {
     match error {
-        Error::UpdateUuidNotAllowed => 403,
-        Error::UpdateInterfacetypeNotAllowed => 403,
-        Error::SomethingWrong => 500,
+        Error::UpdateUuidNotAllowed{..} => 403,
+        Error::InterfaceAlreadyExists{..} => 403,
+        Error::UpdateUuidNotAllowed {..} => 403,
+        Error::UpdateInterfacetypeNotAllowed{..} => 403,
+        Error::UpdateInterfaceNotExists{..} => 403,
+        Error::UpdateFailed {..} => 500,
+        Error::SomethingWrong{..} => 500,
         _ => 400
     }
 }
