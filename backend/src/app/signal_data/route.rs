@@ -6,13 +6,12 @@ use actix_web::{
     },
     post, web,
     web::{BytesMut, Data, Header, Json, JsonBody, Payload},
-    Error, HttpResponse,
+    HttpResponse, HttpRequest
 };
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
+use super::error::Error;
 
-use crate::app::general::error::BackendError;
-use crate::app::signal_data::error::QueryError;
 use crate::sdb::SDBRepository;
 use hdc_shared::models::{
     ingestion_container::IngestionPacket,
@@ -24,21 +23,23 @@ pub async fn ingest_ts_data(
     sdb_repo: Data<SDBRepository>,
     mut payload: Payload,
     content_length: Header<ContentLength>,
+    req: HttpRequest,
 ) -> Result<Json<String>, Error> {
+    let instance: &str = req.path();
     let mut body = BytesMut::new();
     let body_length = *content_length.into_inner();
     while let Some(chunk) = payload.next().await {
-        let chunk = chunk?;
+        let chunk = chunk.map_err(|error| Error::Payload {error, instance: instance.to_owned()})?;
 
         if (body.len() + chunk.len()) > body_length {
-            return Err(error::ErrorBadRequest("overflow"));
+            return Err(Error::BodyOverflow { instance: instance.to_owned() });
         }
         body.extend_from_slice(&chunk);
     }
-    let data_points = serde_json::from_slice::<IngestionPacket>(&body)?;
+    let data_points = serde_json::from_slice::<IngestionPacket>(&body).map_err(|error| Error::Json { error, instance: instance.to_owned() })?;
     match sdb_repo.ingest_data(data_points).await {
         IngestionResponse::Success => Ok(Json("Success".to_string())),
-        IngestionResponse::MultiStatus(response) => Err(response.into()),
+        IngestionResponse::MultiStatus(response) => Ok(Json(response.to_string())),
     }
 }
 
@@ -47,20 +48,20 @@ pub async fn query_timeseries(
     sdb_repo: Data<SDBRepository>,
     mut payload: Payload,
     content_length: Header<ContentLength>,
+    req: HttpRequest,
 ) -> Result<Json<QueryResult>, Error> {
+    let instance: &str = req.path();
     let mut body = BytesMut::new();
     let body_length: usize = *content_length.into_inner();
     while let Some(chunk) = payload.next().await {
-        let chunk = chunk?;
+        let chunk = chunk.map_err(|error| Error::Payload {error, instance: instance.to_owned()})?;
 
         if (body.len() + chunk.len()) > body_length {
-            return Err(error::ErrorBadRequest("overflow"));
+            return Err(Error::BodyOverflow { instance: instance.to_owned() });
         }
         body.extend_from_slice(&chunk);
     }
-    let query = serde_json::from_slice::<QueryTimeseriesData>(&body)?;
-    match sdb_repo.query_timeseries(query).await {
-        QueryResponse::Success(response) => Ok(Json(response)),
-        QueryResponse::Failed => return Err(QueryError::Failed.into()),
-    }
+    let query = serde_json::from_slice::<QueryTimeseriesData>(&body).map_err(|error| Error::Json { error, instance: instance.to_owned() })?;
+    let result: QueryResult = sdb_repo.query_timeseries(query, instance).await?;
+    Ok(Json(result))
 }

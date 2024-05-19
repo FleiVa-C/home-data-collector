@@ -1,4 +1,5 @@
 use std::ops::Bound;
+use super::error::Error;
 
 use crate::sdb::SDBRepository;
 use hdc_shared::models::ingestion_container::*;
@@ -39,7 +40,7 @@ impl SDBRepository {
         }
     }
 
-    pub async fn query_timeseries(&self, data: QueryTimeseriesData) -> QueryResponse {
+    pub async fn query_timeseries(&self, data: QueryTimeseriesData, instance: &str) -> Result<QueryResult, Error> {
         let mut response_data: Vec<SignalData> = Vec::new();
         let mut not_found: Vec<String> = Vec::new();
         let mut query = data.signals.into_iter();
@@ -49,7 +50,7 @@ impl SDBRepository {
                 self.db.select(("signal", &signal)).await;
             let signal_response = match signal_query {
                 Ok(response) => response.unwrap(),
-                Err(_) => return QueryResponse::Failed,
+                Err(_) => return Err(Error::QueryFailed { instance: instance.to_string()}),
             };
             let ts_query: Result<Vec<DataPoint>, surrealdb::Error> = self
                 .db
@@ -72,12 +73,12 @@ impl SDBRepository {
 
                     response_data.push(response);
                 }
-                Err(_) => return QueryResponse::Failed,
+                Err(_) => return Err(Error::QueryFailed { instance: instance.to_string()}),
             }
         }
         let query_result = QueryResult {
             data: response_data,
         };
-        QueryResponse::Success(query_result)
+        Ok(query_result)
     }
 }

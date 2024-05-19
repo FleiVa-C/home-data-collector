@@ -37,23 +37,16 @@ where
 
 
 async fn handle_response(response: Response, sender: Sender<IngestionPacket>, fallbackdata: IngestionPacket){
-    match response.status() {
-        StatusCode::OK => {
-            info!("Sucessfully ingested data: {}@{}",fallbackdata.data[0].timestamp, response.url())
-        }, 
-        StatusCode::MULTI_STATUS => {
+    let response_body = response.text().await.unwrap_or_default();
+    if (response_body == "Success".to_string()){
+            info!("Sucessfully ingested data: {}",fallbackdata.data[0].timestamp)
+    }else{
             warn!("Ingestion partially failed, sending failed data to buffer.");
-            let body = Body::from(response);
-            let body_bytes = body.as_bytes().unwrap();
+            let body_bytes = response_body.as_bytes();
             let body_data: MultiStatusData = serde_json::from_slice(body_bytes).unwrap();
             let data = IngestionPacket{data: body_data.failed};
             buffer_data(data, sender).await;
-        },
-        _ => {
-            warn!("Received unhandled response code, sending data to buffer.");
-            buffer_data(fallbackdata, sender).await
         }
-        };
 }
 
 async fn buffer_data(data: IngestionPacket, sender: Sender<IngestionPacket>){
