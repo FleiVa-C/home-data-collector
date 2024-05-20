@@ -51,20 +51,20 @@ impl ResponseError for Error {
         HttpResponse::build(self.status_code())
             .insert_header(ContentType::json())
             .body(
-                serde_json::to_string(&ProblemDetails::build(self))
+                serde_json::to_string(&self.to_problemdetails())
                 .unwrap(),
             )
     }
 
     fn status_code(&self) -> StatusCode {
-        StatusCode::from_u16(error_status(self)).unwrap()
+        StatusCode::from_u16(self.get_status_code()).unwrap()
     }
 }
 
-impl ProblemDetails{
-    fn build(value: &Error) -> Self {
-        let status_code: u16 = error_status(&value);
-        match value {
+impl Error{
+    fn to_problemdetails(&self) -> ProblemDetails {
+        let status_code: u16 = self.get_status_code();
+        match self {
             Error::BodyOverflow{instance} => ProblemDetails::new(None, status_code, "Unable to Parse body".to_owned(), "Body longer than content-length header".to_string(), instance.to_string()),
             Error::UnknownLength{instance} => ProblemDetails::new(None, status_code, "Unable to Parse body".to_owned(), "Length of body is not known".to_owned(), instance.to_string()),
             Error::CannotParse{instance} => ProblemDetails::new(None, status_code, "Unable to Parse body".to_owned(), "An error occured during the parsing of the body.".to_string(), instance.to_string()),
@@ -80,18 +80,18 @@ impl ProblemDetails{
             _ => ProblemDetails::new(None, status_code, "Something went wrong".to_owned(), "An unknown error occured".to_string(), "unknown".to_string()),
         }
     }
-}
-
-fn error_status(error: &Error) -> u16 {
-    match error {
-        Error::UpdateUuidNotAllowed{..} => 403,
-        Error::InterfaceAlreadyExists{..} => 403,
-        Error::UpdateUuidNotAllowed {..} => 403,
-        Error::UpdateInterfacetypeNotAllowed{..} => 403,
-        Error::UpdateInterfaceNotExists{..} => 403,
-        Error::UpdateFailed {..} => 500,
-        Error::SomethingWrong{..} => 500,
-        _ => 400
+    fn get_status_code(&self) -> u16 {
+        match self {
+            Error::UpdateUuidNotAllowed{..} => 403,
+            Error::InterfaceAlreadyExists{..} => 403,
+            Error::UpdateUuidNotAllowed {..} => 403,
+            Error::UpdateInterfacetypeNotAllowed{..} => 403,
+            Error::UpdateInterfaceNotExists{..} => 403,
+            Error::UpdateFailed {..} => 500,
+            Error::SomethingWrong{..} => 500,
+            _ => 400
+        }
     }
 }
+
 
