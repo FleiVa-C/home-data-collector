@@ -3,7 +3,6 @@ use surrealdb::sql::statements::OptionStatement;
 use surrealdb::{error::Api, sql::Value};
 use super::error::Error;
 
-use crate::app::general::error::BackendError;
 use crate::sdb::SDBRepository;
 use hdc_shared::models::signal_meta::SignalMeta;
 use hdc_shared::models::{interface::*, tasklist::*};

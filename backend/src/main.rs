@@ -14,7 +14,6 @@ mod error;
 
 use app::interface::route::*;
 use app::signal_data::route::*;
-use app::user::route::*;
 use config::ServerConfig;
 use hdc_shared::utils::config::load_config;
 use sdb::SDBRepository;
@@ -47,8 +46,6 @@ async fn main() -> std::io::Result<()> {
             .service(update_interface)
             .service(get_tasks)
             .service(query_interface)
-            .service(register_user)
-            .service(query_user)
     })
     .bind((SocketAddr::new(IpAddr::V4(config.listen_address), config.listen_port)))?
     .run()

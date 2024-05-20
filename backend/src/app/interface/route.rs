@@ -18,7 +18,6 @@ use serde::{Deserialize, Serialize};
 use std::io;
 use surrealdb::error::Api;
 
-use crate::app::general::error::{unpack_surrealdb_error, BackendError};
 use crate::sdb::SDBRepository;
 
 use hdc_shared::models::{
