@@ -14,6 +14,6 @@ reqwest = {version = "0.11.22", features = ["json"]}
 log = "0.4.20"
 env_logger = "0.10.1"
 tokio = {version = "1.35.1", features = ["rt-multi-thread", "macros", "time"]}
-surrealdb = {version = "1.0.2", features = ["kv-rocksdb"]}
 uuid = "1.6.1"
 toml = "0.8.8"
+zstd = "0.13.1"

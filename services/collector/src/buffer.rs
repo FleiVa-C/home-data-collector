@@ -1,6 +1,5 @@
 use hdc_shared::models::ingestion_container::IngestionPacket;
 use log::{error, info, warn};
-use surrealdb::{engine::local::{File, Db}, Surreal};
 use reqwest::Client;
 use tokio::sync::OnceCell;
 use uuid::Uuid;
@@ -8,6 +7,8 @@ use serde::{Serialize, Deserialize};
 use tokio::sync::mpsc::Receiver;
 use std::time::Duration;
 use std::io::Error;
+use std::fs::{self, File};
+use zstd::{Encoder, Decoder};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct BufferWrapper{
@@ -15,22 +16,30 @@ struct BufferWrapper{
     packet: IngestionPacket
 }
 
-pub async fn buffer_handler(db_connection: &'static OnceCell<Surreal<Db>>,
-                            mut recv_channel: Receiver<IngestionPacket>) -> () {
+macro_rules! skip_fail {
+    ($res:expr) => {
+        match $res {
+            Ok(val) => val,
+            Err(e) => {
+                warn!("An error: {}; skipped.", e);
+                continue;
+            }
+        }
+    };
+}
+
+pub async fn buffer_handler(path: &str, mut recv_channel: Receiver<IngestionPacket>) -> Result<(), Box<dyn std::error::Error>> {
     while let Some(data) = recv_channel.recv().await {
         let data_packet = BufferWrapper{
             uuid: Uuid::new_v4().to_string(),
             packet: data
         };
-        let db = db_connection.get().unwrap();
         let mut retry_count: u8 = 0;
+        let writer = File::create(format!("{}/{}.json.zstd", path, data_packet.uuid))?;
+        let mut writer = Encoder::new(writer, 0)?.auto_finish();
         while retry_count < 3{
-            let dp = data_packet.clone();
-            let local_db_response: Result<Option<BufferWrapper>, surrealdb::Error> = db
-                .create(("buffer_data", &dp.uuid))
-                .content(dp)
-                .await;
-            match local_db_response {
+            let success = serde_json::to_writer(&mut writer, &data_packet.packet);
+            match success {
                 Ok(_) => {
                     info!("buffer_handler: Data added to local buffer.");
                     break;
@@ -46,44 +55,32 @@ pub async fn buffer_handler(db_connection: &'static OnceCell<Surreal<Db>>,
         error!("buffer_handler: Failed to add Data to local buffer after {} retries, aborting.", retry_count);
         }
     }
+    Ok(())
 }
 
-pub async fn buffer_ingestor(db_connection: &'static OnceCell<Surreal<Db>>,
-                             ingestion_url: &str) -> Result<(), Error>{
-
-let db = db_connection.get().unwrap();
-    let local_db_response: Vec<BufferWrapper> = db
-        .select("buffer_data")
-        .await
-        .map_err(|_| Error::other("cant read database"))?;
-
-    if local_db_response.len() > 0 {
+pub async fn buffer_ingestor(path: &str, ingestion_url: &str) -> Result<(), Box<dyn std::error::Error>>{
+    for entry in fs::read_dir(format!("{}", path))?{
+        if let Ok(dir) = entry{
+            let reader = skip_fail!(File::open(dir.path()));
+            let reader = skip_fail!(Decoder::new(reader));
+            let data: IngestionPacket = skip_fail!(serde_json::from_reader(reader));
             let client = reqwest::Client::new();
-            let mut data_it = local_db_response.iter();
-            while let Some(data) = data_it.next(){
-                let response = client.post(ingestion_url)
-                    .body(serde_json::to_string(&data.packet).unwrap())
-                    .send()
-                    .await;
-                match response {
-                    Ok(resp) => {
-                        match resp.status() {
-                            reqwest::StatusCode::OK => {
-                                let _: Option<BufferWrapper> = db_connection.get().unwrap()
-                                    .delete(("buffer_data", &data.uuid))
-                                    .await
-                                    .map_err(|_| Error::other("cant delete"))?;
-                            },
-                            _ => warn!("buffer_ingestor: failed to ingest packet, will keep in buffer for next ingestion")
-
-                        }
-                    },
-                    Err(_) => warn!("buffer_ingestor: failed to ingest packet, will keep in buffer for next ingestion")
-                }
-            };
-        }else{
-            info!("buffer_ingestor: Buffer is empty.");
+            let response = client.post(ingestion_url)
+                .body(serde_json::to_string(&data).unwrap())
+                .send()
+                .await;
+            match response {
+                Ok(resp) => {
+                    match resp.status() {
+                        reqwest::StatusCode::OK => {
+                            fs::remove_file(dir.path())?;
+                        },
+                        _ => warn!("buffer_ingestor: failed to ingest packet, will keep in buffer for next ingestion")
+                    }
+                },
+                Err(_) => warn!("buffer_ingestor: failed to ingest packet, will keep in buffer for next ingestion")
+            }
         };
+    };
     Ok(())
-
 }

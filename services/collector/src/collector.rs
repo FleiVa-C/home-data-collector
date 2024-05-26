@@ -1,8 +1,8 @@
 use crate::models::shelly_v1::IsSignalResponse;
 use hdc_shared::models::{ingestion_container::IngestionPacket, tasklist::CollectorTask, signal_data::MultiStatusData};
 use reqwest::{self, Error, StatusCode, Response, Body};
-use serde::de::DeserializeOwned;
 use log::{error, info, warn};
+use serde::de::DeserializeOwned;
 use tokio::runtime::Runtime;
 use std::time::Duration;
 use tokio::sync::mpsc::Sender;
