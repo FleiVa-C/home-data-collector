@@ -24,8 +24,8 @@ static TASKLIST: RwLock<Tasklist> = RwLock::new(Tasklist::new());
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::env::set_var("RUST_LOG", "info");
     env_logger::init();
-    let config: Arc<CollectorConfig> = Arc::new(CollectorConfig::load());
-
+    let config: Arc<CollectorConfig> = Arc::new(CollectorConfig::load("./Config.toml"));
+    println!("{:?}", config);
     let (send, mut recv) = channel::<IngestionPacket>(32);
 
     tasklist_observer(&TASKLIST, &config.tasklist_url).await;
@@ -49,7 +49,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let tasklist_status = tasklist_observer(&TASKLIST, &tasklist_observer_config.tasklist_url).await;
                 match tasklist_status {
                     Ok(()) => info!("Tasklist updated"),
-                    Err(_) => warn!("Failed to get latest Tasklist")
+                    Err(e) => warn!("Failed to get latest Tasklist: {:?}", e)
                 }
             }
         });

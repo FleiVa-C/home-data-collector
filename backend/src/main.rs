@@ -23,7 +23,7 @@ pub use self::error::{Error, Result};
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    let config: ServerConfig = ServerConfig::load();
+    let config: ServerConfig = ServerConfig::load("./Config.toml");
 
     std::env::set_var("RUST_LOG", &config.loglevel);
     env_logger::init();

@@ -50,18 +50,15 @@ pub struct CollectorConfig {
 }
 
 impl CollectorConfig {
-    pub fn load() -> Self {
-        let config_filepaths: [&str; 2] = ["./config.toml", "./Config.toml"];
+    pub fn load(config_filepath: &str) -> Self {
 
         let mut content: String = String::new();
 
-        for filepath in config_filepaths {
-            let config: io::Result<String> = fs::read_to_string(filepath);
+        let config: io::Result<String> = fs::read_to_string(config_filepath);
 
-            if config.is_ok() {
-                content = config.unwrap();
-                break;
-            }
+        if config.is_ok() {
+            println!("Config Found");
+            content = config.unwrap();
         }
 
         let config_toml: CollectorConfigToml = toml::from_str(&content).unwrap_or_else(|_| {
