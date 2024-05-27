@@ -8,7 +8,7 @@ pub enum Error {
     Custom(String),
 
     #[from]
-    Io(std::io::Error) //example
+    Io(std::io::Error), //example
 }
 
 impl Error {

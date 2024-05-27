@@ -10,11 +10,11 @@ pub struct User {
     pub email: String,
     pub password: String,
     pub ts_register: i64,
-    pub is_admin: bool
+    pub is_admin: bool,
 }
 
 impl User {
-    pub fn add_uuid(&mut self){
+    pub fn add_uuid(&mut self) {
         self.uuid = Some(Uuid::new_v4().to_string());
     }
 }

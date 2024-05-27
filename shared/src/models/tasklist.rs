@@ -11,9 +11,7 @@ pub struct Tasklist {
 
 impl Tasklist {
     pub const fn new() -> Tasklist {
-        Tasklist{
-            tasks: Vec::new()
-        }
+        Tasklist { tasks: Vec::new() }
     }
 }
 

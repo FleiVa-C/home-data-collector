@@ -1,7 +1,7 @@
 #![allow(unused)]
-use actix_web::{middleware::Logger, web::Data, App, HttpServer};
 use actix_cors::Cors;
-use log::{info, warn, debug};
+use actix_web::{middleware::Logger, web::Data, App, HttpServer};
+use log::{debug, info, warn};
 use std::net::{IpAddr, SocketAddr};
 use surrealdb::engine::remote::ws::{Client, Ws};
 use surrealdb::opt::auth::Root;
@@ -9,15 +9,14 @@ use surrealdb::sql::Thing;
 
 mod app;
 mod config;
-mod sdb;
 mod error;
+mod sdb;
 
 use app::interface::route::*;
 use app::signal_data::route::*;
 use config::ServerConfig;
 use hdc_shared::utils::config::load_config;
 use sdb::SDBRepository;
-
 
 pub use self::error::{Error, Result};
 
@@ -34,8 +33,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         let logger = Logger::default();
         let sdb_data = Data::new(sdb_repo.clone());
-        let cors = Cors::default()
-            .allow_any_origin();
+        let cors = Cors::default().allow_any_origin();
         App::new()
             .wrap(logger)
             .wrap(cors)

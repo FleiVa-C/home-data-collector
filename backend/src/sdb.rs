@@ -12,9 +12,10 @@ pub struct SDBRepository {
 
 impl SDBRepository {
     pub async fn init(config: &ServerConfig) -> Self {
-        let mut client: Surreal<Client> = Surreal::new::<Ws>(format!("{}:{}", config.db_address, config.db_port))
-        .await
-        .expect("Can't connect to SurrealBD instance!");
+        let mut client: Surreal<Client> =
+            Surreal::new::<Ws>(format!("{}:{}", config.db_address, config.db_port))
+                .await
+                .expect("Can't connect to SurrealBD instance!");
         client
             .signin(Root {
                 username: &config.db_username,

@@ -7,6 +7,6 @@ pub mod shelly_v2_adapter_light;
 pub mod signal_data;
 pub mod signal_meta;
 pub mod tasklist;
+pub mod user;
 pub mod weather_adapter;
 pub mod weather_adapter_light;
-pub mod user;

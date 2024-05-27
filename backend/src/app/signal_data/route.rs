@@ -1,3 +1,4 @@
+use super::error::Error;
 use actix_web::{
     error, get,
     http::{
@@ -6,11 +7,10 @@ use actix_web::{
     },
     post, web,
     web::{BytesMut, Data, Header, Json, JsonBody, Payload},
-    HttpResponse, HttpRequest
+    HttpRequest, HttpResponse,
 };
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
-use super::error::Error;
 
 use crate::sdb::SDBRepository;
 use hdc_shared::models::{
@@ -29,14 +29,23 @@ pub async fn ingest_ts_data(
     let mut body = BytesMut::new();
     let body_length = *content_length.into_inner();
     while let Some(chunk) = payload.next().await {
-        let chunk = chunk.map_err(|error| Error::Payload {error, instance: instance.to_owned()})?;
+        let chunk = chunk.map_err(|error| Error::Payload {
+            error,
+            instance: instance.to_owned(),
+        })?;
 
         if (body.len() + chunk.len()) > body_length {
-            return Err(Error::BodyOverflow { instance: instance.to_owned() });
+            return Err(Error::BodyOverflow {
+                instance: instance.to_owned(),
+            });
         }
         body.extend_from_slice(&chunk);
     }
-    let data_points = serde_json::from_slice::<IngestionPacket>(&body).map_err(|error| Error::Json { error, instance: instance.to_owned() })?;
+    let data_points =
+        serde_json::from_slice::<IngestionPacket>(&body).map_err(|error| Error::Json {
+            error,
+            instance: instance.to_owned(),
+        })?;
     match sdb_repo.ingest_data(data_points).await {
         IngestionResponse::Success => Ok(Json("Success".to_string())),
         IngestionResponse::MultiStatus(response) => Ok(Json(response.to_string())),
@@ -54,14 +63,23 @@ pub async fn query_timeseries(
     let mut body = BytesMut::new();
     let body_length: usize = *content_length.into_inner();
     while let Some(chunk) = payload.next().await {
-        let chunk = chunk.map_err(|error| Error::Payload {error, instance: instance.to_owned()})?;
+        let chunk = chunk.map_err(|error| Error::Payload {
+            error,
+            instance: instance.to_owned(),
+        })?;
 
         if (body.len() + chunk.len()) > body_length {
-            return Err(Error::BodyOverflow { instance: instance.to_owned() });
+            return Err(Error::BodyOverflow {
+                instance: instance.to_owned(),
+            });
         }
         body.extend_from_slice(&chunk);
     }
-    let query = serde_json::from_slice::<QueryTimeseriesData>(&body).map_err(|error| Error::Json { error, instance: instance.to_owned() })?;
+    let query =
+        serde_json::from_slice::<QueryTimeseriesData>(&body).map_err(|error| Error::Json {
+            error,
+            instance: instance.to_owned(),
+        })?;
     let result: QueryResult = sdb_repo.query_timeseries(query, instance).await?;
     Ok(Json(result))
 }

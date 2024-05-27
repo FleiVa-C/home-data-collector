@@ -49,7 +49,6 @@ pub struct ServerConfig {
 
 impl ServerConfig {
     pub fn load(config_filepath: &str) -> Self {
-
         let mut content: String = String::new();
 
         let config: io::Result<String> = fs::read_to_string(config_filepath);
@@ -107,7 +106,9 @@ impl ServerConfig {
         ) = match config_toml.database {
             Some(db_param) => {
                 let address: String = db_param.address.unwrap_or_else(|| {
-                    println!("Missing field address in table databse, taking 127.0.0.1 as default.");
+                    println!(
+                        "Missing field address in table databse, taking 127.0.0.1 as default."
+                    );
                     "127.0.0.1".to_string()
                 });
 
@@ -139,14 +140,16 @@ impl ServerConfig {
             }
             None => {
                 println!("Missing table database, taking default values.");
-                
-                ("127.0.0.1".to_owned(),
-                80,
-                "dev".to_owned(),
-                "dev".to_owned(),
-                "dev".to_owned(),
-                "dev".to_owned(),
-            )},
+
+                (
+                    "127.0.0.1".to_owned(),
+                    80,
+                    "dev".to_owned(),
+                    "dev".to_owned(),
+                    "dev".to_owned(),
+                    "dev".to_owned(),
+                )
+            }
         };
         ServerConfig {
             loglevel,
