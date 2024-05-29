@@ -1,0 +1,60 @@
+name: Create and Publish the Docker images to ghcr.io
+
+on:
+  workflow_dispatch
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME_BACKEND: hdc-server
+  IMAGE_NAME_COLLECTOR: hdc-collector
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+  
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log into ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN}}
+      
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY}}/Fleiva-C/${{ env.IMAGE_NAME_BACKEND }}
+
+      - name: Build and push Docker images
+        id: push-backend
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta-collector
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY}}/FleiVa-C/${{ env.IMAGE_NAME_COLLECTOR }}
+
+      - name: Build and push Docker images
+        id: push-collector
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./services/collector/Dockerfile
+          push: true
+          tags: ${{ steps.meta-collector.outputs.tags }}
+          labels: ${{ steps.meta-collector.outputs.labels }}
