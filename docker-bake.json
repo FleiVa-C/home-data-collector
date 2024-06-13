@@ -1,0 +1,32 @@
+{
+  "variable" : {
+    "TAG": {
+      "default": "latest"
+    }
+  },
+  "group": {
+    "default": {
+      "targets": ["server", "collector"]
+    }
+  },
+  "target": {
+    "server": {
+      "target": "final-server",
+      "tags": [
+        "hdc-server",
+        "ghcr.io/fleiva-c/hdc-server"
+      ],
+      "platforms": ["linux/amd64", "linux/arm64/v8"]
+    }
+  },
+  "target": {
+    "collector": {
+      "target": "final-collector",
+      "tags": [
+        "hdc-collector",
+        "ghcr.io/fleiva-c/hdc-server"
+      ],
+      "platforms": ["linux/amd64", "linux/arm64/v8"]
+    }
+  }
+}
