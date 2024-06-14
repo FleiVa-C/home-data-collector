@@ -1,0 +1,15 @@
+[logging]
+loglevel="info"
+
+[api_endpoints]
+ingestion_url="http://server:8080/v1/ts/ingest"
+tasklist_url="http://server:8080/v1/tasks"
+
+[ingestion]
+collection_interval=30
+task_update_interval=300
+buffer_ingestion_interval=300
+
+[database]
+db_path="/data_buffer"
+

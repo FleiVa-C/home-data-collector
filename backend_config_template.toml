@@ -1,0 +1,14 @@
+[logging]
+loglevel="info"
+
+[listen_parameters]
+address="0.0.0.0"
+port=8080
+
+[database]
+address="surrealdb"
+port=8000
+username=
+password=
+namespace=
+database=
