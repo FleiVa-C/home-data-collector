@@ -1,7 +1,9 @@
 name: Create and Publish the Docker images to ghcr.io
 
 on:
-  workflow_dispatch
+  push:
+    branches:
+      - 'master'
 
 env:
   REGISTRY: ghcr.io
