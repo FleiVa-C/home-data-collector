@@ -2,12 +2,10 @@ use log::info;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io;
-use std::net::Ipv4Addr;
-use std::net::Ipv6Addr;
 use std::u16;
 
 #[derive(Serialize, Deserialize)]
-struct ServerConfigToml {
+struct ServerConfigYml {
     logging: Option<Logging>,
     listen_parameters: Option<Endpoint>,
     database: Option<Database>,
@@ -20,7 +18,7 @@ struct Logging {
 
 #[derive(Serialize, Deserialize)]
 struct Endpoint {
-    address: Option<Ipv4Addr>,
+    address: Option<String>,
     port: Option<u16>,
 }
 
@@ -37,7 +35,7 @@ struct Database {
 #[derive(Debug)]
 pub struct ServerConfig {
     pub loglevel: String,
-    pub listen_address: Ipv4Addr,
+    pub listen_address: String,
     pub listen_port: u16,
     pub db_address: String,
     pub db_port: u16,
@@ -54,20 +52,17 @@ impl ServerConfig {
         let config: io::Result<String> = fs::read_to_string(config_filepath);
 
         if config.is_ok() {
-            println!("Config Found");
             content = config.unwrap();
         }
 
-        let config_toml: ServerConfigToml = toml::from_str(&content).unwrap_or_else(|_| {
-            println!("Failed to read Config");
-            ServerConfigToml {
+        let config_yml: ServerConfigYml =
+            serde_yml::from_str(&content).unwrap_or_else(|_| ServerConfigYml {
                 logging: None,
                 listen_parameters: None,
                 database: None,
-            }
-        });
+            });
 
-        let loglevel: String = match config_toml.logging {
+        let loglevel: String = match config_yml.logging {
             Some(logging) => logging.loglevel.unwrap_or_else(|| {
                 println!("Missing field loglevel in table logging, taking info as default");
                 "debug".to_owned()
@@ -78,11 +73,11 @@ impl ServerConfig {
             }
         };
 
-        let (listen_address, listen_port): (Ipv4Addr, u16) = match config_toml.listen_parameters {
+        let (listen_address, listen_port): (String, u16) = match config_yml.listen_parameters {
             Some(listen_parameters) => {
-                let address: Ipv4Addr = listen_parameters.address.unwrap_or_else(|| {
+                let address: String = listen_parameters.address.unwrap_or_else(|| {
                     println!("Missing field address in table endpoint, taking 0.0.0.0 as default");
-                    Ipv4Addr::new(0, 0, 0, 0)
+                    "0.0.0.0".to_owned()
                 });
 
                 let port: u16 = listen_parameters.port.unwrap_or_else(|| {
@@ -93,7 +88,7 @@ impl ServerConfig {
             }
             None => {
                 println!("Missing table endpoint, taking default values");
-                (Ipv4Addr::new(127, 0, 0, 1), 8080)
+                ("127.0.0.1".to_owned(), 8080)
             }
         };
         let (db_address, db_port, db_username, db_password, db_namespace, db_database): (
@@ -103,7 +98,7 @@ impl ServerConfig {
             String,
             String,
             String,
-        ) = match config_toml.database {
+        ) = match config_yml.database {
             Some(db_param) => {
                 let address: String = db_param.address.unwrap_or_else(|| {
                     println!(

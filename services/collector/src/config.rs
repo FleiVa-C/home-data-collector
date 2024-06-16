@@ -4,10 +4,9 @@ use std::env;
 use std::fs;
 use std::io;
 use std::net::Ipv4Addr;
-use toml;
 
 #[derive(Serialize, Deserialize)]
-pub struct CollectorConfigToml {
+pub struct CollectorConfigYml {
     logging: Option<Logging>,
     api_endpoints: Option<ApiEndpoint>,
     ingestion: Option<IngestionParams>,
@@ -55,13 +54,12 @@ impl CollectorConfig {
         let config: io::Result<String> = fs::read_to_string(config_filepath);
 
         if config.is_ok() {
-            println!("Config Found");
             content = config.unwrap();
         }
 
-        let config_toml: CollectorConfigToml = toml::from_str(&content).unwrap_or_else(|_| {
+        let config_yml: CollectorConfigYml = serde_yml::from_str(&content).unwrap_or_else(|_| {
             warn!("Failed to read Config");
-            CollectorConfigToml {
+            CollectorConfigYml {
                 logging: None,
                 api_endpoints: None,
                 ingestion: None,
@@ -69,7 +67,7 @@ impl CollectorConfig {
             }
         });
 
-        let loglevel: String = match config_toml.logging {
+        let loglevel: String = match config_yml.logging {
             Some(logging) => logging.loglevel.unwrap_or_else(|| {
                 warn!("Missing field loglevel in table logging, taking info as default");
                 "info".to_owned()
@@ -80,7 +78,7 @@ impl CollectorConfig {
             }
         };
 
-        let (ingestion_url, tasklist_url): (String, String) = match config_toml.api_endpoints {
+        let (ingestion_url, tasklist_url): (String, String) = match config_yml.api_endpoints {
             Some(endpoints) => {
                 let ingestion_url = endpoints.ingestion_url.unwrap_or_else(|| {
                     warn!(
@@ -108,7 +106,7 @@ impl CollectorConfig {
             u64,
             u64,
             u64,
-        ) = match config_toml.ingestion {
+        ) = match config_yml.ingestion {
             Some(ingestion_params) => {
                 let collection_interval = ingestion_params.collection_interval.unwrap_or_else(||{
                         warn!("Missign field collection_interval in Table ingestion, taking 30 as default.");
@@ -133,7 +131,7 @@ impl CollectorConfig {
                 (30, 300, 600)
             }
         };
-        let db_path: String = match config_toml.database {
+        let db_path: String = match config_yml.database {
             Some(path) => path.db_path.unwrap_or_else(|| {
                 warn!(
                     "Missing field db_path in table database, taking ./Data/buffer.db as default."
@@ -156,26 +154,3 @@ impl CollectorConfig {
         }
     }
 }
-
-//const DB_PATH: &str = "test/temp.db";
-//const INGESTION_URL: &str = "http://127.0.0.1:8080/v1/ingest";
-//const TASKLIST_URL: &str = "http://127.0.0.1:8080/v1/get_tasks";
-//const COLLECTOR_INTERVAL: u64 = 30;
-//const TASK_UPDATE_INTERVAL: u64 = 300;
-//const BUFFER_INGESTION_INTERVAL: u64 = 120;
-//const LOG_LEVEL: &str = "info";
-
-//            logging: Logging {loglevel: "info".to_owned()},
-//            api_endpoints: ApiEndpoint {
-//                ingestion_url: "".to_owned(),
-//                tasklist_url: "".to_owned()
-//            },
-//            ingestion: IngestionParams{
-//                collection_interval: 30,
-//                task_update_interval: 300,
-//                buffer_ingestion_interval: 300
-//            },
-//            database: LocalDatabase {
-//                db_path: "data/buffer.db".to_owned()
-//            }
-//        }

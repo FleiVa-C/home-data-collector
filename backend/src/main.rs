@@ -3,6 +3,7 @@ use actix_cors::Cors;
 use actix_web::{middleware::Logger, web::Data, App, HttpServer};
 use log::{debug, info, warn};
 use std::net::{IpAddr, SocketAddr};
+use std::str::FromStr;
 use surrealdb::engine::remote::ws::{Client, Ws};
 use surrealdb::opt::auth::Root;
 use surrealdb::sql::Thing;
@@ -15,14 +16,13 @@ mod sdb;
 use app::interface::route::*;
 use app::signal_data::route::*;
 use config::ServerConfig;
-use hdc_shared::utils::config::load_config;
 use sdb::SDBRepository;
 
 pub use self::error::{Error, Result};
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    let config: ServerConfig = ServerConfig::load("./Config.toml");
+    let config: ServerConfig = ServerConfig::load("./Config.yml");
 
     std::env::set_var("RUST_LOG", &config.loglevel);
     env_logger::init();
@@ -45,7 +45,12 @@ async fn main() -> std::io::Result<()> {
             .service(get_tasks)
             .service(query_interface)
     })
-    .bind((SocketAddr::new(IpAddr::V4(config.listen_address), config.listen_port)))?
+    .bind(
+        (SocketAddr::new(
+            IpAddr::from_str(&config.listen_address).unwrap(),
+            config.listen_port,
+        )),
+    )?
     .run()
     .await
 }

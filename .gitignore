@@ -1,7 +1,7 @@
 */target
 target
 */visual
-**/[Cc]onfig.toml
+**/[Cc]onfig.yml
 */test/*
 */node_modules
 */.svelte-kit

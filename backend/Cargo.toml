@@ -20,6 +20,6 @@ futures = "0.3.29"
 serde_json = "1.0.107"
 chrono = "0.4.31"
 hdc_shared = { path = "../shared"}
-toml = "0.8.8"
 actix-cors = "0.7.0"
 serde_with = { version = "3.8.1", features = ["macros"] }
+serde_yml = "0.0.10"

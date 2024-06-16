@@ -1,7 +1,6 @@
 #![allow(unused)]
 use config::CollectorConfig;
-use hdc_shared::utils::config::load_config;
-use log::{info, warn};
+use log::{debug, info, warn};
 use std::sync::{Arc, RwLock};
 use std::time::SystemTime;
 use tokio::sync::{mpsc::channel, OnceCell};
@@ -22,10 +21,10 @@ static TASKLIST: RwLock<Tasklist> = RwLock::new(Tasklist::new());
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    std::env::set_var("RUST_LOG", "info");
+    let config: Arc<CollectorConfig> = Arc::new(CollectorConfig::load("./Config.yml"));
+    std::env::set_var("RUST_LOG", &config.loglevel);
     env_logger::init();
-    let config: Arc<CollectorConfig> = Arc::new(CollectorConfig::load("./Config.toml"));
-    println!("{:?}", config);
+    debug!("{:?}", config);
     let (send, mut recv) = channel::<IngestionPacket>(32);
 
     tasklist_observer(&TASKLIST, &config.tasklist_url).await;
