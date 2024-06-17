@@ -1,4 +1,4 @@
-use log::{info, warn};
+use regex::{Captures, Regex};
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs;
@@ -54,11 +54,19 @@ impl CollectorConfig {
         let config: io::Result<String> = fs::read_to_string(config_filepath);
 
         if config.is_ok() {
+            let reg = Regex::new(r"\$\{(?<value>[A-Za-z_]+)\}").unwrap();
             content = config.unwrap();
+            content = reg
+                .replace_all(&content, |caps: &Captures| {
+                    let var_name = &caps["value"];
+                    std::env::var(var_name)
+                        .unwrap_or_else(|_| panic!("Environment variable {} not set", var_name))
+                })
+                .to_string();
         }
 
         let config_yml: CollectorConfigYml = serde_yml::from_str(&content).unwrap_or_else(|_| {
-            warn!("Failed to read Config");
+            println!("Failed to read Config");
             CollectorConfigYml {
                 logging: None,
                 api_endpoints: None,
@@ -69,11 +77,11 @@ impl CollectorConfig {
 
         let loglevel: String = match config_yml.logging {
             Some(logging) => logging.loglevel.unwrap_or_else(|| {
-                warn!("Missing field loglevel in table logging, taking info as default");
+                println!("Missing field loglevel in table logging, taking info as default");
                 "info".to_owned()
             }),
             None => {
-                warn!("Missing table logging, taking info as default loglevel");
+                println!("Missing table logging, taking info as default loglevel");
                 "info".to_owned()
             }
         };
@@ -81,20 +89,22 @@ impl CollectorConfig {
         let (ingestion_url, tasklist_url): (String, String) = match config_yml.api_endpoints {
             Some(endpoints) => {
                 let ingestion_url = endpoints.ingestion_url.unwrap_or_else(|| {
-                    warn!(
+                    println!(
                         "Missing field ingestion_url in table ingestione, taking  default value."
                     );
                     "http://127.0.0.1:8080/v1/ingest".to_owned()
                 });
 
                 let tasklist_url = endpoints.tasklist_url.unwrap_or_else(|| {
-                    warn!("Missing field tasklist_url in table ingestione, taking  default value.");
+                    println!(
+                        "Missing field tasklist_url in table ingestione, taking  default value."
+                    );
                     "http://127.0.0.1:8080/v1/get_tasks".to_owned()
                 });
                 (ingestion_url, tasklist_url)
             }
             None => {
-                warn!("Missing table endpoints");
+                println!("Missing table endpoints");
                 (
                     "http://127.0.0.1:8080/v1/ingest".to_owned(),
                     "http://127.0.0.1:8080/v1/get_tasks".to_owned(),
@@ -109,15 +119,15 @@ impl CollectorConfig {
         ) = match config_yml.ingestion {
             Some(ingestion_params) => {
                 let collection_interval = ingestion_params.collection_interval.unwrap_or_else(||{
-                        warn!("Missign field collection_interval in Table ingestion, taking 30 as default.");
+                        println!("Missign field collection_interval in Table ingestion, taking 30 as default.");
                         30
                     });
                 let task_update_interval = ingestion_params.task_update_interval.unwrap_or_else(||{
-                        warn!("Missign field task_update_interval in Table ingestion, taking 300 as default.");
+                        println!("Missign field task_update_interval in Table ingestion, taking 300 as default.");
                         300
                     });
                 let buffer_ingestion_interval = ingestion_params.buffer_ingestion_interval.unwrap_or_else(||{
-                        warn!("Missign field buffer_ingestion_interval in Table ingestion, taking 600 as default.");
+                        println!("Missign field buffer_ingestion_interval in Table ingestion, taking 600 as default.");
                         600
                     });
                 (
@@ -127,19 +137,19 @@ impl CollectorConfig {
                 )
             }
             None => {
-                warn!("Missign Table ingestion, taking default values.");
+                println!("Missign Table ingestion, taking default values.");
                 (30, 300, 600)
             }
         };
         let db_path: String = match config_yml.database {
             Some(path) => path.db_path.unwrap_or_else(|| {
-                warn!(
+                println!(
                     "Missing field db_path in table database, taking ./Data/buffer.db as default."
                 );
                 "./Data/buffer.db".to_owned()
             }),
             None => {
-                warn!("Missing table database, taking default parameters.");
+                println!("Missing table database, taking default parameters.");
                 "./Data/buffer.db".to_owned()
             }
         };

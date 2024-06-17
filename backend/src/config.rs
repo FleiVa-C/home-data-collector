@@ -1,5 +1,8 @@
-use log::info;
+use core::panic;
+use regex::Captures;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
+use std::env::VarError;
 use std::fs;
 use std::io;
 use std::u16;
@@ -52,7 +55,15 @@ impl ServerConfig {
         let config: io::Result<String> = fs::read_to_string(config_filepath);
 
         if config.is_ok() {
+            let reg = Regex::new(r"\$\{(?<value>[A-Za-z_]+)\}").unwrap();
             content = config.unwrap();
+            content = reg
+                .replace_all(&content, |caps: &Captures| {
+                    let var_name = &caps["value"];
+                    std::env::var(var_name)
+                        .unwrap_or_else(|_| panic!("Environment variable {} not set", var_name))
+                })
+                .to_string();
         }
 
         let config_yml: ServerConfigYml =
