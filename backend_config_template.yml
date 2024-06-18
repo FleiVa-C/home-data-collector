@@ -8,7 +8,7 @@ listen_parameters:
 database:
   address: "surrealdb"
   port: 8000
-  username: 
-  password: 
-  namespace: 
-  database: 
+  username: "${DB_USER}"
+  password: "${DB_PASS}"
+  namespace: "dev"
+  database: "dev"

@@ -61,7 +61,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     let collector_config = config.clone();
-    let path = format!("{}", &collector_config.db_path);
+    let path = format!("{}", &collector_config.buffer_path);
     let ingestion_url = Arc::new(collector_config.ingestion_url.clone());
     tokio::spawn(async move {
         let mut interval = interval_at(
@@ -86,7 +86,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         loop {
             interval.tick().await;
             let status =
-                buffer_ingestor(&buffer_config.db_path, &buffer_config.ingestion_url).await;
+                buffer_ingestor(&buffer_config.buffer_path, &buffer_config.ingestion_url).await;
             match status {
                 Ok(()) => (),
                 Err(e) => warn!("bufer_ingestor: {:?}", e),

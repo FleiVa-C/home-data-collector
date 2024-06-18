@@ -10,6 +10,6 @@ ingestion:
   task_update_interval: 300
   buffer_ingestion_interval: 300
 
-database:
-  db_path: "/data_buffer"
+buffer:
+  buffer_path: "/data_buffer"
 

@@ -1,0 +1,39 @@
+services:
+
+  surrealdb:
+    entrypoint: 
+      - /surreal 
+      - start 
+      - --user
+      - ${DB_USER}
+      - --pass
+      - ${DB_PASS}
+    image: surrealdb/surrealdb:latest
+    ports:
+      - 8000:8000
+    volumes:
+      - "./surreal:/surreal_db"
+
+  mysqldb:
+    image: mysql
+    restart: always
+    volumes:
+      - "./mysql:/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: "${SQL_PASS}"
+    ports:
+      - "81:3306"
+
+  server:
+    image: ghcr.io/fleiva-c/hdc-server:latest
+    ports:
+      - "8080:8080"
+    restart: always
+    volumes:
+      - ./backend_config_template.yml:/config.yml
+
+  collector:
+    image: ghcr.io/fleiva-c/hdc-collector:latest
+    restart: always
+    volumes:
+      - ./collector_config_template.yml:/config.yml

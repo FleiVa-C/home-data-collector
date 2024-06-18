@@ -10,7 +10,7 @@ pub struct CollectorConfigYml {
     logging: Option<Logging>,
     api_endpoints: Option<ApiEndpoint>,
     ingestion: Option<IngestionParams>,
-    database: Option<LocalDatabase>,
+    buffer: Option<LocalBuffer>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -32,8 +32,8 @@ struct IngestionParams {
 }
 
 #[derive(Serialize, Deserialize)]
-struct LocalDatabase {
-    db_path: Option<String>,
+struct LocalBuffer {
+    buffer_path: Option<String>,
 }
 
 #[derive(Debug)]
@@ -44,7 +44,7 @@ pub struct CollectorConfig {
     pub collection_interval: u64,
     pub task_update_interval: u64,
     pub buffer_ingestion_interval: u64,
-    pub db_path: String,
+    pub buffer_path: String,
 }
 
 impl CollectorConfig {
@@ -71,18 +71,18 @@ impl CollectorConfig {
                 logging: None,
                 api_endpoints: None,
                 ingestion: None,
-                database: None,
+                buffer: None,
             }
         });
 
         let loglevel: String = match config_yml.logging {
             Some(logging) => logging.loglevel.unwrap_or_else(|| {
                 println!("Missing field loglevel in table logging, taking info as default");
-                "info".to_owned()
+                "debug".to_owned()
             }),
             None => {
                 println!("Missing table logging, taking info as default loglevel");
-                "info".to_owned()
+                "debug".to_owned()
             }
         };
 
@@ -141,8 +141,8 @@ impl CollectorConfig {
                 (30, 300, 600)
             }
         };
-        let db_path: String = match config_yml.database {
-            Some(path) => path.db_path.unwrap_or_else(|| {
+        let buffer_path: String = match config_yml.buffer {
+            Some(path) => path.buffer_path.unwrap_or_else(|| {
                 println!(
                     "Missing field db_path in table database, taking ./Data/buffer.db as default."
                 );
@@ -160,7 +160,7 @@ impl CollectorConfig {
             collection_interval,
             task_update_interval,
             buffer_ingestion_interval,
-            db_path,
+            buffer_path,
         }
     }
 }
