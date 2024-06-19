@@ -9,27 +9,26 @@ The core component is the actix web backend service that provides REST API endpo
 To store all data (not only timeseries data), a surrealdb instance is used. Collection of the timeseries data is managed by a collector service that requests the sensor data at equal intervals and ingests them through the backend REST API's.
 
 ## Notes
-This project is not finished or ready to be run at all. Therefore the chapter "Deployment" is just a placeholder on what i think will be needed or is yet to be created.
-Since i work alone in this project, branches/pull requests/merges would not be needed but it was for me to learn git. Also i use issues to track on what is on my mind.
+This project is not finished and still under development.
 
 ## Deployment
 
-The project is designed to run in a k3s kubernetes cluster once the first version is done.
-
+In the end the Project should run in a K3S cluster. In the current phase it is designed to run on a single host with docker-compose.
 ### Dependencies
 
-* k3s (on device you want to deploy the project to)
-* kubectl (on the control device)
-* docker-desktop
+* docker (see install [here](https://docs.docker.com/engine/install/))
 
 ### Running the service
 
-* build the docker image
+* build the docker image (see [README.Docker.md](https://github.com/FleiVa-C/home-data-collector/blob/master/README.Docker.md))
+* get the relevant files onto your device:
 ```
-docker build --tag <chosen_name_for_image> .
+wget https://githubusercontent.com/FleiVa-C/home-data-collector/master/compose.yml
+wget https://githubusercontent.com/FleiVa-C/home-data-collector/master/collector_config_template.yml
+wget https://githubusercontent.com/FleiVa-C/home-data-collector/master/backend_config_template.yml
 ```
-* deploy the service to k3s
-    * see example .yaml files
+* run the application:
+`docker compose up`
 
 ## Author
 
