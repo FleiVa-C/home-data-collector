@@ -27,8 +27,8 @@ wget https://githubusercontent.com/FleiVa-C/home-data-collector/master/compose.y
 wget https://githubusercontent.com/FleiVa-C/home-data-collector/master/collector_config_template.yml
 wget https://githubusercontent.com/FleiVa-C/home-data-collector/master/backend_config_template.yml
 ```
-* run the application:
-`docker compose up`
+* create `.env` file, add variables `DB_USER`, `DB_PASS` and `SQL_PASS`
+* run the application: `docker compose up`
 
 ## Author
 
@@ -39,7 +39,7 @@ wget https://githubusercontent.com/FleiVa-C/home-data-collector/master/backend_c
 
 ## License
 
-This project is licensed under the [MIT] License - see the `LICENSE.md` file for details.
+This project is licensed under the [MIT] License - see the [`LICENSE.md`](https://github.com/FleiVa-C/home-data-collector/blob/master/LICENCE.md) for details.
 
 ## Acknowledgments
 

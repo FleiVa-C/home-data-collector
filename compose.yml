@@ -1,6 +1,8 @@
 services:
 
   surrealdb:
+    image: surrealdb/surrealdb:latest
+    restart: always
     entrypoint: 
       - /surreal 
       - start 
@@ -8,15 +10,26 @@ services:
       - ${DB_USER}
       - --pass
       - ${DB_PASS}
-    image: surrealdb/surrealdb:latest
+      - --auth
+    env_file:
+      - ./.env
     ports:
       - 8000:8000
     volumes:
       - "./surreal:/surreal_db"
+    healthcheck:
+      test: ["CMD", "isready"] 
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 10s
+      start_interval: 5s
 
   mysqldb:
     image: mysql
     restart: always
+    env_file:
+      - ./.env
     volumes:
       - "./mysql:/var/lib/mysql"
     environment:
@@ -26,14 +39,21 @@ services:
 
   server:
     image: ghcr.io/fleiva-c/hdc-server:latest
+    depends_on:
+      - surrealdb
+    restart: always
     ports:
       - "8080:8080"
-    restart: always
     volumes:
-      - ./backend_config_template.yml:/config.yml
+      - ./backend_config_template.yml:/Config.yml
+    env_file:
+      - ./.env
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
 
   collector:
     image: ghcr.io/fleiva-c/hdc-collector:latest
     restart: always
     volumes:
-      - ./collector_config_template.yml:/config.yml
+      - ./collector_config_template.yml:/Config.yml
