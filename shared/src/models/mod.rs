@@ -9,4 +9,4 @@ pub mod signal_meta;
 pub mod tasklist;
 pub mod user;
 pub mod weather_adapter;
-pub mod weather_adapter_light;
+pub mod weather_model;

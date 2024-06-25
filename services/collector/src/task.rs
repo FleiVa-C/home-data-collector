@@ -6,7 +6,6 @@ use tokio::sync::mpsc::Sender;
 use super::collector::collect;
 use crate::models::shelly_v1::ShellyV1Response;
 use crate::models::shelly_v2::ShellyV2Response;
-use crate::models::weather::WeatherResponse;
 use hdc_shared::models::ingestion_container::IngestionPacket;
 use hdc_shared::models::tasklist::{TaskType, Tasklist};
 
@@ -29,9 +28,6 @@ pub async fn task_dispatcher(
             TaskType::ShellyV2Task(_) => {
                 tokio::spawn(async move { collect::<ShellyV2Response>(task, &url, channel).await })
             }
-            TaskType::WeatherTask(_) => {
-                tokio::spawn(async move { collect::<WeatherResponse>(task, &url, channel).await })
-            } //SensorType::Smartfox => collect::<SmartfoxResponse>(task)
         };
     }
 }

@@ -1,7 +1,6 @@
 use super::interface::{Interface, InterfaceModel, IsAdapter};
 use super::shelly_v1_adapter_light::ShellyV1AdapterLight;
 use super::shelly_v2_adapter_light::ShellyV2AdapterLight;
-use super::weather_adapter_light::WeatherAdapterLight;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -25,7 +24,6 @@ pub struct CollectorTask {
 pub enum TaskType {
     ShellyV1Task(ShellyV1AdapterLight),
     ShellyV2Task(ShellyV2AdapterLight),
-    WeatherTask(WeatherAdapterLight),
 }
 
 impl From<InterfaceModel> for CollectorTask {
@@ -37,9 +35,6 @@ impl From<InterfaceModel> for CollectorTask {
             }
             InterfaceModel::ShellyV2(model) => {
                 TaskType::ShellyV2Task(ShellyV2AdapterLight::from(model.signals))
-            }
-            InterfaceModel::WeatherAPI(model) => {
-                TaskType::WeatherTask(WeatherAdapterLight::from(model.signals))
             }
         };
 

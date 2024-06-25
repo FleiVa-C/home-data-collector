@@ -15,6 +15,7 @@ mod sdb;
 
 use app::interface::route::*;
 use app::signal_data::route::*;
+use app::weather_connector::route::*;
 use config::ServerConfig;
 use sdb::SDBRepository;
 
@@ -44,6 +45,8 @@ async fn main() -> std::io::Result<()> {
             .service(update_interface)
             .service(get_tasks)
             .service(query_interface)
+            .service(register_weather_connector)
+            .service(ingest_weather)
     })
     .bind(
         (SocketAddr::new(
