@@ -2,6 +2,7 @@ use super::interface::{Interface, InterfaceModel, IsAdapter};
 use super::shelly_v1_adapter_light::ShellyV1AdapterLight;
 use super::shelly_v2_adapter_light::ShellyV2AdapterLight;
 use serde::{Deserialize, Serialize};
+use std::option::Option;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Tasklist {
@@ -24,23 +25,4 @@ pub struct CollectorTask {
 pub enum TaskType {
     ShellyV1Task(ShellyV1AdapterLight),
     ShellyV2Task(ShellyV2AdapterLight),
-}
-
-impl From<InterfaceModel> for CollectorTask {
-    fn from(value: InterfaceModel) -> Self {
-        let url: String = value.get_url();
-        let adapter: TaskType = match value {
-            InterfaceModel::ShellyV1(model) => {
-                TaskType::ShellyV1Task(ShellyV1AdapterLight::from(model.signals))
-            }
-            InterfaceModel::ShellyV2(model) => {
-                TaskType::ShellyV2Task(ShellyV2AdapterLight::from(model.signals))
-            }
-        };
-
-        CollectorTask {
-            url,
-            signals: adapter,
-        }
-    }
 }

@@ -7,6 +7,8 @@ use std::time::SystemTime;
 use crate::models;
 use models::ingestion_container::*;
 use models::tasklist::TaskType;
+use models::interface::IsAdapter;
+use models::signal_meta::SignalMeta;
 
 use super::weather_adapter::WeatherAdapter;
 
@@ -64,7 +66,7 @@ impl<'a> Iterator for WeatherResponseIterator<'a> {
 }
 
 impl WeatherResponse {
-    pub fn to_ingestion_packet(self, meta_data: WeatherAdapter) -> IngestionPacket {
+    pub fn to_ingestion_packet(self, meta_data: Vec<SignalMeta>) -> IngestionPacket {
         let mut data: Vec<Measurement> = Vec::new();
         let meters = self.iter();
         let sys_time_now = SystemTime::now();

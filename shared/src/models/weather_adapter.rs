@@ -4,14 +4,6 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
-pub struct WeatherModel {
-    pub uuid: Option<String>,
-    pub name: String,
-    pub url: String,
-    pub signals: WeatherAdapter,
-}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct WeatherAdapter {
     pub tempf: SignalMeta,
     pub humidity: SignalMeta,
@@ -24,13 +16,6 @@ pub struct WeatherAdapter {
     pub dailyrainin: SignalMeta,
     pub solarradiation: SignalMeta,
     pub uv: SignalMeta,
-}
-
-impl WeatherModel {
-    pub fn add_uuid(&mut self) {
-        self.uuid = Some(Uuid::new_v4().to_string());
-        self.signals.add_uuid()
-    }
 }
 
 impl IsAdapter for WeatherAdapter {

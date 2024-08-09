@@ -45,7 +45,6 @@ async fn main() -> std::io::Result<()> {
             .service(update_interface)
             .service(get_tasks)
             .service(query_interface)
-            .service(register_weather_connector)
             .service(ingest_weather)
     })
     .bind(
