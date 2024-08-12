@@ -15,7 +15,7 @@ use uuid::Uuid;
 pub enum InterfaceModel {
     ShellyV1(Interface<ShellyV1Adapter>),
     ShellyV2(Interface<ShellyV2Adapter>),
-    WeatherAdapter(Interface<WeatherAdapter>),
+    WeatherIngestion(Interface<WeatherAdapter>),
 }
 
 impl InterfaceModel {
@@ -23,28 +23,28 @@ impl InterfaceModel {
         match self {
             Self::ShellyV1(value) => value.url.clone(),
             Self::ShellyV2(value) => value.url.clone(),
-            Self::WeatherAdapter(value) => value.url.clone(),
+            Self::WeatherIngestion(value) => value.url.clone(),
         }
     }
     pub fn add_uuid(&mut self) {
         match self {
             Self::ShellyV1(value) => value.add_uuid(),
             Self::ShellyV2(value) => value.add_uuid(),
-            Self::WeatherAdapter(value) => value.add_uuid(),
+            Self::WeatherIngestion(value) => value.add_uuid(),
         }
     }
     pub fn get_signals(&self) -> Vec<SignalMeta> {
         match self {
             Self::ShellyV1(value) => value.signals.get_signals(),
             Self::ShellyV2(value) => value.signals.get_signals(),
-            Self::WeatherAdapter(value) => value.signals.get_signals(),
+            Self::WeatherIngestion(value) => value.signals.get_signals(),
         }
     }
     pub fn get_uuid(&self) -> Option<String> {
         match self {
             Self::ShellyV1(value) => value.uuid.clone(),
             Self::ShellyV2(value) => value.uuid.clone(),
-            Self::WeatherAdapter(value) => value.uuid.clone(),
+            Self::WeatherIngestion(value) => value.uuid.clone(),
         }
     }
     pub fn check_update(&self, new_value: &Self) -> bool {
@@ -52,12 +52,12 @@ impl InterfaceModel {
             let existing_signals = match self {
                 Self::ShellyV1(value) => value.signals.get_signals(),
                 Self::ShellyV2(value) => value.signals.get_signals(),
-                Self::WeatherAdapter(value) => value.signals.get_signals(),
+                Self::WeatherIngestion(value) => value.signals.get_signals(),
             };
             let update_signals = match new_value {
                 Self::ShellyV1(value) => value.signals.get_signals(),
                 Self::ShellyV2(value) => value.signals.get_signals(),
-                Self::WeatherAdapter(value) => value.signals.get_signals(),
+                Self::WeatherIngestion(value) => value.signals.get_signals(),
             };
             let success: Option<()> = existing_signals
                 .iter()
@@ -88,7 +88,7 @@ impl InterfaceModel {
             InterfaceModel::ShellyV2(model) => {
                 Some(TaskType::ShellyV2Task(ShellyV2AdapterLight::from(model.signals)))
             }
-            InterfaceModel::WeatherAdapter(_)=> None
+            InterfaceModel::WeatherIngestion(_)=> None
         };
 
         match adapter {

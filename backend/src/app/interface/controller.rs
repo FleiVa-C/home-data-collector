@@ -63,7 +63,7 @@ impl SDBRepository {
         let tasklist = response
             .into_iter()
             .map(|entry| entry.to_task())
-            .take_while(|entry| entry.is_some())
+            .filter(|entry| entry.is_some())
             .map(|entry| entry.unwrap())
             .collect();
         Ok(tasklist)
