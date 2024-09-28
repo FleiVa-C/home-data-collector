@@ -1,39 +1,22 @@
 <script lang="ts">
-    import type { PageData } from './$types';
-    import type { InterfaceData } from '$lib/types';
-    import InterfaceDetail from './interfacedetail.svelte'; 
-
-    export let data: PageData;
-
-    let selected: InterfaceData = data.interfaces[0];
-
-    function setSelected(sensor: InterfaceData) {
-        selected = sensor
-    };
+	import { Input } from '$lib/components/ui/input';
+	import Header from '../Header.svelte';
+	import DataTable from "./data-table.svelte"
 </script>
 
-<div class="flex flex-row h-full">
-    <div class="variant-filled-surface center w-1/4 p-5">
-        <input class="input" type="search" placeholder="Search"/>
-        <nav class="list-nav">
-            <ul >
-                {#each data.interfaces as sensor}
-                    <li>
-                        <button class="w-full" on:click={() => setSelected(sensor)}>
-                        <span class="flex-left">{sensor.name}</span>
-                        <span class="flex-auto">{sensor.url}</span>
-                        </button>
-                    </li>
-                {/each}
-            </ul>
-        </nav>
 
-    </div>
-    <div class="variant-filled-surface w-full">
-        <InterfaceDetail interfaceInfo={selected} />
-    </div>
-</div>
+<body>
+	<Header></Header>
+	<div class="flex flex-col gap-5 m-5 mt-8">
+		<div>
+			<h1 class="text-4xl">Interfaces</h1>
+			<p class="my-2 text-muted-foreground">Overview of the registered qcquisition interfaces.</p>
+		</div>
+		<div class="w-full">
+			<div class="mb-4 flex items-center gap-4">
+				<Input class="h-8 max-w-lg" placeholder="Search..." type="text" ></Input>
+			</div>
+			<DataTable/>
+		</div>
 
-
-<style>
-</style>
+</body>

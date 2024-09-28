@@ -1,4 +1,11 @@
-<div class="container h-full mx-auto flex justify-center items-center">
-	<div class="space-y-10 text-center flex flex-col items-center">
-	</div>
-</div>
+<script>
+	import Header from './Header.svelte';
+</script>
+
+<svelte:head>
+	<title>Home</title>
+	<meta name="description" content="Svelte demo app" />
+</svelte:head>
+	<Header></Header>
+<section>
+</section>

@@ -15,21 +15,23 @@
 				url(new_york.jpeg);"
 		/>
 	</div>
-	<div class="lg:p-8" >
+	<div class="lg:p-8">
 		<div class="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
 			<div class="flex flex-col space-y-2 text-center">
-				<h1 class="text-2xl font-semibold tracking-tight">Login to your Account</h1>
+				<h1 class="text-2xl font-semibold tracking-tight">Create Account</h1>
 				<div class="flex flex-row justify-center">
 					<p class="text-muted-foreground text-sm">
-						No Account ?
+						Already have an Account ?
 					</p>
-					<a href="/register" class="ml-1 text-muted-foreground text-sm hover:text-foreground underline"> Sign Up.</a>
+					<a href="/login"class="ml-1 text-muted-foreground text-sm hover:text-foreground underline"> Log in.</a>
 				</div>
 			</div>
 			<div class="flex flex-col gap-4">
+				<Input type="text" placeholder="firstname"/>
+				<Input type="text" placeholder="lastname"/>
 				<Input type="email" placeholder="email"/>
 				<Input type="password" placeholder="password"/>
-				<Button>Sign in</Button>
+				<Button>Create Account</Button>
 			</div>
 		</div>
 	</div>
